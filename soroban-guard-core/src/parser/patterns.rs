@@ -1,4 +1,4 @@
-use crate::parser::ast::{StorageAccessType, StorageType};
+use crate::parser::ast::{ArithOp, StorageAccessType, StorageType};
 use syn::{Attribute, Expr, Path};
 
 pub fn has_contractimpl_attr(attrs: &[Attribute]) -> bool {
@@ -34,6 +34,54 @@ pub fn method_is_require_auth_for_args(name: &str) -> bool {
 
 pub fn method_is_invoke_contract(name: &str) -> bool {
     matches!(name, "invoke_contract" | "invoke_contract_read_only")
+}
+
+/// The family an arithmetic method belongs to. All are recorded, but only the
+/// `Checked`/`Saturating` families make an operation safe from the overflow
+/// detector's point of view; `Wrapping`/`Overflowing` are explicit opt-ins to
+/// wraparound and are still recorded (as unchecked) for completeness.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ArithMethodKind {
+    Checked,
+    Saturating,
+    Wrapping,
+    Overflowing,
+}
+
+impl ArithMethodKind {
+    /// True when this method family prevents silent overflow.
+    pub fn is_checked(&self) -> bool {
+        matches!(self, ArithMethodKind::Checked | ArithMethodKind::Saturating)
+    }
+}
+
+/// Classify an arithmetic method name such as `checked_add`, `wrapping_sub`,
+/// `overflowing_mul`, or `saturating_add` into its operator and family.
+/// Returns `None` for any other method name.
+pub fn classify_arith_method(name: &str) -> Option<(ArithOp, ArithMethodKind)> {
+    let (prefix, kind) = if let Some(rest) = name.strip_prefix("checked_") {
+        (rest, ArithMethodKind::Checked)
+    } else if let Some(rest) = name.strip_prefix("saturating_") {
+        (rest, ArithMethodKind::Saturating)
+    } else if let Some(rest) = name.strip_prefix("wrapping_") {
+        (rest, ArithMethodKind::Wrapping)
+    } else if let Some(rest) = name.strip_prefix("overflowing_") {
+        (rest, ArithMethodKind::Overflowing)
+    } else {
+        return None;
+    };
+
+    let op = match prefix {
+        "add" => ArithOp::Add,
+        "sub" => ArithOp::Sub,
+        "mul" => ArithOp::Mul,
+        "div" => ArithOp::Div,
+        "rem" => ArithOp::Mod,
+        "shl" => ArithOp::Shl,
+        "shr" => ArithOp::Shr,
+        _ => return None,
+    };
+    Some((op, kind))
 }
 
 pub fn method_is_storage(name: &str) -> bool {

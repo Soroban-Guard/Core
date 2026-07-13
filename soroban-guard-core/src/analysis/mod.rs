@@ -52,6 +52,7 @@ impl AnalysisEngine {
     pub fn with_default_rules() -> Self {
         let mut engine = Self::new();
         engine.register(Box::new(reentrancy::ReentrancyDetector));
+        engine.register(Box::new(overflow::OverflowChecker));
         engine
     }
 
