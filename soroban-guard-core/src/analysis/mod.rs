@@ -53,6 +53,7 @@ impl AnalysisEngine {
         let mut engine = Self::new();
         engine.register(Box::new(reentrancy::ReentrancyDetector));
         engine.register(Box::new(overflow::OverflowChecker));
+        engine.register(Box::new(access_control::AccessControlDetector));
         engine
     }
 
@@ -93,7 +94,7 @@ impl AnalysisRunner {
         let analyzers: Vec<Box<dyn Analyzer + Send + Sync>> = vec![
             Box::new(reentrancy::ReentrancyDetector),
             Box::new(overflow::OverflowChecker),
-            Box::new(access_control::AccessControlAnalyzer),
+            Box::new(access_control::AccessControlDetector),
             Box::new(storage::StorageCollisionDetector),
         ];
 

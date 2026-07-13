@@ -42,6 +42,9 @@ pub struct FnBodyAnalysis {
     pub has_loops: bool,
     pub has_unsafe: bool,
     pub calls_external: bool,
+    /// Hardcoded address string literals (e.g. `Address::from_str("G...")`).
+    /// Each entry is the string value and its source position.
+    pub hardcoded_address_strs: Vec<(String, SourcePos)>,
 }
 
 impl FnBodyAnalysis {
@@ -56,7 +59,14 @@ impl FnBodyAnalysis {
             has_loops: false,
             has_unsafe: false,
             calls_external: false,
+            hardcoded_address_strs: Vec::new(),
         }
+    }
+}
+
+impl FnBodyAnalysis {
+    pub fn has_storage_writes(&self) -> bool {
+        !self.storage_writes.is_empty()
     }
 }
 

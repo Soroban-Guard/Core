@@ -691,6 +691,24 @@ impl<'ast> Visit<'ast> for ContractVisitor {
                     });
                 }
 
+                // Check for hardcoded addresses: Address::from_str("G...") etc.
+                if path_str == "Address::from_str" || path_str == "Address::from_string" {
+                    for arg in &expr.args {
+                        if let syn::Expr::Lit(lit) = patterns::unwrap_expr(arg) {
+                            if let syn::Lit::Str(s) = &lit.lit {
+                                let span = syn::spanned::Spanned::span(&*expr.func).start();
+                                analysis.hardcoded_address_strs.push((
+                                    s.value(),
+                                    SourcePos {
+                                        line: span.line,
+                                        column: span.column,
+                                    },
+                                ));
+                            }
+                        }
+                    }
+                }
+
                 // Check for Symbol::new(&env, "name") pattern
                 if path_str == "Symbol::new" || path_str == "symbol::new" {
                     // This is handled by extract_symbol_name
