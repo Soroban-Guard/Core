@@ -241,8 +241,14 @@ impl<'ast> Visit<'ast> for ContractVisitor {
             let analysis = &mut func.body_analysis;
 
             // Check for storage operations: env.storage().<type>().<op>(...)
+            // The op (get/set/has/del) must be the method being invoked on *this*
+            // node — i.e. the last link in the chain. Without this guard, a
+            // trailing combinator such as `.get(&k).unwrap()` re-matches when we
+            // visit the outer `.unwrap()` call (whose receiver chain still
+            // contains `storage`/`get`), registering a bogus access with the
+            // wrong (or missing) key argument.
             if let Some(storage_idx) = chain.iter().position(|s| s == "storage") {
-                if storage_idx + 2 < chain.len() {
+                if storage_idx + 2 == chain.len() - 1 {
                     let storage_type_seg = &chain[storage_idx + 1];
                     let op_seg = &chain[storage_idx + 2];
 
@@ -254,11 +260,16 @@ impl<'ast> Visit<'ast> for ContractVisitor {
                                 .map(|a| extract_key_from_expr(a))
                                 .unwrap_or_else(|| ("unknown".to_string(), StorageKeyType::Other("unknown".to_string())));
 
+                            let span = expr.method.span().start();
                             let access = StorageAccess {
                                 key: key_desc,
                                 key_type,
                                 access_type: access_type.clone(),
                                 storage_type: storage_type.clone(),
+                                position: SourcePos {
+                                    line: span.line,
+                                    column: span.column,
+                                },
                             };
 
                             match access_type {
@@ -308,6 +319,7 @@ impl<'ast> Visit<'ast> for ContractVisitor {
                     function,
                     args_count,
                     position: pos,
+                    read_only: method_name == "invoke_contract_read_only",
                 });
                 analysis.calls_external = true;
             }
@@ -326,6 +338,7 @@ impl<'ast> Visit<'ast> for ContractVisitor {
                         line: span.line,
                         column: span.column,
                     },
+                    read_only: false,
                 });
                 analysis.calls_external = true;
             }

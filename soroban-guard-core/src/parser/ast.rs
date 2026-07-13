@@ -62,9 +62,17 @@ pub struct CrossContractCall {
     pub function: String,
     pub args_count: usize,
     pub position: SourcePos,
+    /// True when the call was made via `invoke_contract_read_only` (a call that
+    /// cannot mutate the callee's state but can still surface stale reads — see
+    /// read-only reentrancy, rule R-02).
+    pub read_only: bool,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+/// A source position. Ordered lexicographically by `(line, column)` so that
+/// analyses can compare whether one construct occurs before another in the
+/// function body (used by the reentrancy detector to order storage writes
+/// relative to external calls).
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct SourcePos {
     pub line: usize,
     pub column: usize,
@@ -99,6 +107,9 @@ pub struct StorageAccess {
     pub key_type: StorageKeyType,
     pub access_type: StorageAccessType,
     pub storage_type: StorageType,
+    /// Location of the access in the source. Used to order reads/writes relative
+    /// to cross-contract calls when detecting reentrancy.
+    pub position: SourcePos,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

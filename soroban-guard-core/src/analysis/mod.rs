@@ -9,12 +9,77 @@ use walkdir::WalkDir;
 
 use crate::config::Config;
 use crate::error::Result;
+use crate::parser::ast::Contract;
 use crate::report::finding::Finding;
 use crate::report::Report;
 
 pub trait Analyzer {
     fn analyze(&self, source: &str, file_path: &str) -> Vec<Finding>;
     fn name(&self) -> &'static str;
+}
+
+/// A structural analysis rule that operates on a fully parsed [`Contract`]
+/// rather than raw source text. This is the interface detectors (like the
+/// reentrancy detector) implement so they can reason over the parser's
+/// `FnBodyAnalysis` — cross-contract calls, storage accesses, and their source
+/// positions — instead of re-scanning the source.
+pub trait AnalysisRule: Send + Sync {
+    /// Stable identifier for the rule family (e.g. `"reentrancy"`).
+    fn id(&self) -> &'static str;
+    /// Human-readable name.
+    fn name(&self) -> &'static str;
+    /// One-line description of what the rule detects.
+    fn description(&self) -> &'static str;
+    /// Run the rule against a parsed contract, producing zero or more findings.
+    fn analyze(&self, contract: &Contract) -> Vec<Finding>;
+}
+
+/// Registry of [`AnalysisRule`]s. Rules run in registration order and their
+/// findings are concatenated. This is the `Contract`-level counterpart to the
+/// source-level [`AnalysisRunner`] used by the CLI.
+pub struct AnalysisEngine {
+    rules: Vec<Box<dyn AnalysisRule>>,
+}
+
+impl AnalysisEngine {
+    /// Create an empty engine with no rules registered.
+    pub fn new() -> Self {
+        AnalysisEngine { rules: Vec::new() }
+    }
+
+    /// Create an engine pre-populated with the default rule set. The reentrancy
+    /// detector is registered first.
+    pub fn with_default_rules() -> Self {
+        let mut engine = Self::new();
+        engine.register(Box::new(reentrancy::ReentrancyDetector));
+        engine
+    }
+
+    /// Register a rule. Rules execute in the order they are registered.
+    pub fn register(&mut self, rule: Box<dyn AnalysisRule>) -> &mut Self {
+        self.rules.push(rule);
+        self
+    }
+
+    /// Run every registered rule against `contract`, returning all findings.
+    pub fn run(&self, contract: &Contract) -> Vec<Finding> {
+        let mut findings = Vec::new();
+        for rule in &self.rules {
+            findings.extend(rule.analyze(contract));
+        }
+        findings
+    }
+
+    /// Number of registered rules.
+    pub fn rule_count(&self) -> usize {
+        self.rules.len()
+    }
+}
+
+impl Default for AnalysisEngine {
+    fn default() -> Self {
+        Self::with_default_rules()
+    }
 }
 
 pub struct AnalysisRunner {
