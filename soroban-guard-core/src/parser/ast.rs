@@ -207,6 +207,10 @@ pub struct StorageAccess {
     /// Location of the access in the source. Used to order reads/writes relative
     /// to cross-contract calls when detecting reentrancy.
     pub position: SourcePos,
+    /// Rendered expression text of the value being written (set) or None for
+    /// reads/deletes. Used by the storage collision detector (S-03) to detect
+    /// mixed types stored at the same key.
+    pub value_type: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

@@ -530,6 +530,16 @@ impl<'ast> Visit<'ast> for ContractVisitor {
                                 .map(|a| extract_key_from_expr(a))
                                 .unwrap_or_else(|| ("unknown".to_string(), StorageKeyType::Other("unknown".to_string())));
 
+                            let value_type = if access_type == StorageAccessType::Write {
+                                expr.args.get(1).map(|a| {
+                                    let s = quote::quote!(#a).to_string();
+                                    // Strip leading & and whitespace for cleaner output
+                                    s.trim_start_matches('&').trim().to_string()
+                                })
+                            } else {
+                                None
+                            };
+
                             let span = expr.method.span().start();
                             let access = StorageAccess {
                                 key: key_desc,
@@ -540,6 +550,7 @@ impl<'ast> Visit<'ast> for ContractVisitor {
                                     line: span.line,
                                     column: span.column,
                                 },
+                                value_type,
                             };
 
                             match access_type {

@@ -186,11 +186,20 @@ pub fn extract_symbol_name(expr: &Expr) -> Option<String> {
             }
             None
         }
-        // `symbol_short!("name")` macro invocation.
+        // `symbol_short!("name")` or `symbol!("name")` macro invocation.
         Expr::Macro(m) => {
             if m.mac.path.is_ident("symbol_short") {
                 if let Ok(lit) = m.mac.parse_body::<syn::LitStr>() {
                     return Some(lit.value());
+                }
+            }
+            if m.mac.path.is_ident("symbol") {
+                if let Ok(body) = m.mac.parse_body::<syn::Expr>() {
+                    if let syn::Expr::Lit(lit) = &body {
+                        if let syn::Lit::Str(s) = &lit.lit {
+                            return Some(s.value());
+                        }
+                    }
                 }
             }
             None

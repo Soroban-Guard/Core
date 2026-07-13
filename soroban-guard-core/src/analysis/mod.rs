@@ -54,6 +54,7 @@ impl AnalysisEngine {
         engine.register(Box::new(reentrancy::ReentrancyDetector));
         engine.register(Box::new(overflow::OverflowChecker));
         engine.register(Box::new(access_control::AccessControlDetector));
+        engine.register(Box::new(storage::StorageCollisionDetector));
         engine
     }
 
