@@ -167,4 +167,31 @@ mod tests {
         assert_eq!(contract.name, "Unknown");
         assert_eq!(contract.functions.len(), 0);
     }
+
+    #[test]
+    fn test_client_new_cross_contract_call() {
+        let parser = ContractParser::new();
+        let contract = parser
+            .parse_source(
+                r#"
+                #[contractimpl]
+                impl Pool {
+                    pub fn swap(env: Env, token: Address, from: Address, amount: i128) {
+                        TokenClient::new(&env, &token).transfer(&from, &env.current_contract_address(), &amount);
+                    }
+                }
+                "#,
+            )
+            .expect("Failed to parse");
+
+        assert_eq!(contract.functions.len(), 1);
+        let swap = &contract.functions[0];
+        let calls = &swap.body_analysis.cross_contract_calls;
+        assert_eq!(calls.len(), 1);
+        assert_eq!(calls[0].function, "transfer");
+        assert_eq!(calls[0].target, "token");
+        assert_eq!(calls[0].args_count, 3);
+        assert!(swap.body_analysis.calls_external);
+        assert!(contract.dependencies.contains(&"token".to_string()));
+    }
 }

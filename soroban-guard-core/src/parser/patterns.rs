@@ -59,8 +59,56 @@ pub fn detect_storage_access_type(name: &str) -> Option<StorageAccessType> {
     }
 }
 
-pub fn extract_string_literal(expr: &Expr) -> Option<String> {
+/// Strip surrounding references, parentheses, and invisible groups so that
+/// `&Symbol::new(..)`, `(Symbol::new(..))`, etc. are matched by the same logic
+/// as the bare expression.
+pub fn unwrap_expr(expr: &Expr) -> &Expr {
     match expr {
+        Expr::Reference(r) => unwrap_expr(&r.expr),
+        Expr::Paren(p) => unwrap_expr(&p.expr),
+        Expr::Group(g) => unwrap_expr(&g.expr),
+        other => other,
+    }
+}
+
+/// Detect a Soroban generated-client constructor: `SomethingClient::new(&env, &addr)`.
+/// Returns the target contract address expression (the last argument, usually the
+/// address) as a string when the pattern matches. These constructors are how
+/// contracts make typed cross-contract calls, e.g.
+/// `TokenClient::new(&env, &token).transfer(..)`.
+pub fn detect_client_new(expr: &Expr) -> Option<String> {
+    if let Expr::Call(call) = unwrap_expr(expr) {
+        if let Expr::Path(path) = &*call.func {
+            let segments = &path.path.segments;
+            // Path shaped like `<Type>::new`, where the type name ends in `Client`.
+            if segments.len() >= 2 {
+                let last = &segments[segments.len() - 1].ident;
+                let type_ident = &segments[segments.len() - 2].ident;
+                if last == "new" && type_ident.to_string().ends_with("Client") {
+                    // The contract address is conventionally the final argument.
+                    return call
+                        .args
+                        .last()
+                        .map(|a| match unwrap_expr(a) {
+                            Expr::Path(p) => p
+                                .path
+                                .segments
+                                .iter()
+                                .map(|s| s.ident.to_string())
+                                .collect::<Vec<_>>()
+                                .join("::"),
+                            other => quote::quote!(#other).to_string(),
+                        })
+                        .or_else(|| Some(type_ident.to_string()));
+                }
+            }
+        }
+    }
+    None
+}
+
+pub fn extract_string_literal(expr: &Expr) -> Option<String> {
+    match unwrap_expr(expr) {
         Expr::Lit(lit) => {
             if let syn::Lit::Str(s) = &lit.lit {
                 return Some(s.value());
@@ -72,13 +120,29 @@ pub fn extract_string_literal(expr: &Expr) -> Option<String> {
 }
 
 pub fn extract_symbol_name(expr: &Expr) -> Option<String> {
-    match expr {
+    match unwrap_expr(expr) {
         Expr::Call(call) => {
             if let Expr::Path(path) = &*call.func {
-                if path.path.is_ident("Symbol") || path.path.is_ident("symbol") {
-                    if let Some(arg) = call.args.first() {
-                        return extract_string_literal(arg);
-                    }
+                // Match `Symbol::new(..)` / `symbol::new(..)` and bare `Symbol(..)`.
+                let is_symbol_ctor = path
+                    .path
+                    .segments
+                    .first()
+                    .map(|s| s.ident == "Symbol" || s.ident == "symbol")
+                    .unwrap_or(false);
+                if is_symbol_ctor {
+                    // The symbol name is the first string-literal argument
+                    // (e.g. `Symbol::new(&env, "name")`).
+                    return call.args.iter().find_map(extract_string_literal);
+                }
+            }
+            None
+        }
+        // `symbol_short!("name")` macro invocation.
+        Expr::Macro(m) => {
+            if m.mac.path.is_ident("symbol_short") {
+                if let Ok(lit) = m.mac.parse_body::<syn::LitStr>() {
+                    return Some(lit.value());
                 }
             }
             None

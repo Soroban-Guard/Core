@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Contract {
     pub name: String,
     pub functions: Vec<ContractFn>,
@@ -8,7 +8,7 @@ pub struct Contract {
     pub dependencies: Vec<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ContractFn {
     pub name: String,
     pub args: Vec<FnArg>,
@@ -19,19 +19,19 @@ pub struct ContractFn {
     pub body_analysis: FnBodyAnalysis,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FnArg {
     pub name: String,
     pub type_name: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum FnVisibility {
     Public,
     Private,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FnBodyAnalysis {
     pub cross_contract_calls: Vec<CrossContractCall>,
     pub storage_writes: Vec<StorageAccess>,
@@ -56,7 +56,7 @@ impl FnBodyAnalysis {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct CrossContractCall {
     pub target: String,
     pub function: String,
@@ -64,13 +64,13 @@ pub struct CrossContractCall {
     pub position: SourcePos,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SourcePos {
     pub line: usize,
     pub column: usize,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum StorageKeyType {
     Symbol,
     Bytes,
@@ -78,7 +78,7 @@ pub enum StorageKeyType {
     Other(String),
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum StorageAccessType {
     Read,
     Write,
@@ -86,14 +86,14 @@ pub enum StorageAccessType {
     Check,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum StorageType {
     Instance,
     Temporary,
     Persistent,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct StorageAccess {
     pub key: String,
     pub key_type: StorageKeyType,
@@ -101,13 +101,13 @@ pub struct StorageAccess {
     pub storage_type: StorageType,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct AuthCheck {
     pub kind: AuthKind,
     pub target: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum AuthKind {
     RequireAuth,
     RequireAuthForArgs,

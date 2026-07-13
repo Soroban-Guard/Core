@@ -85,7 +85,16 @@ fn extract_target_from_expr(expr: &syn::Expr) -> String {
     if let Some(s) = patterns::extract_symbol_name(expr) {
         return format!("Symbol({:?})", s);
     }
-    expr_to_string(expr)
+    expr_to_string(patterns::unwrap_expr(expr))
+}
+
+/// Extract the bare invoked-function name from a cross-contract call argument.
+/// Unlike `extract_target_from_expr`, a `Symbol::new(&env, "transfer")` yields
+/// the plain `transfer` rather than a `Symbol("transfer")` wrapper.
+fn extract_invoked_fn_name(expr: &syn::Expr) -> String {
+    patterns::extract_symbol_name(expr)
+        .or_else(|| patterns::extract_string_literal(expr))
+        .unwrap_or_else(|| expr_to_string(expr))
 }
 
 fn extract_key_from_expr(expr: &syn::Expr) -> (String, StorageKeyType) {
@@ -100,6 +109,25 @@ fn extract_key_from_expr(expr: &syn::Expr) -> (String, StorageKeyType) {
         return (expr_str, StorageKeyType::Bytes);
     }
     (expr_str.clone(), StorageKeyType::Other(expr_str))
+}
+
+/// Count the number of arguments packed into a cross-contract call's argument
+/// container. Soroban call sites pass these as a tuple `(&a, &b)`, an array
+/// `[a, b]`, or a `vec![...]` macro; anything else counts as a single argument.
+fn count_call_args(expr: &syn::Expr) -> usize {
+    match patterns::unwrap_expr(expr) {
+        syn::Expr::Tuple(t) => t.elems.len(),
+        syn::Expr::Array(a) => a.elems.len(),
+        syn::Expr::Macro(m) if m.mac.path.is_ident("vec") => {
+            m.mac
+                .parse_body_with(
+                    syn::punctuated::Punctuated::<syn::Expr, syn::Token![,]>::parse_terminated,
+                )
+                .map(|args| args.len())
+                .unwrap_or(1)
+        }
+        _ => 1,
+    }
 }
 
 pub fn parse_contract(source: &str) -> Result<Contract, String> {
@@ -248,9 +276,10 @@ impl<'ast> Visit<'ast> for ContractVisitor {
 
             // Check for cross-contract calls: env.invoke_contract(...) or env.invoke_contract_read_only(...)
             if patterns::method_is_invoke_contract(&method_name) {
+                let span = expr.method.span().start();
                 let pos = SourcePos {
-                    line: 0,
-                    column: 0,
+                    line: span.line,
+                    column: span.column,
                 };
                 let mut args_iter = expr.args.iter();
 
@@ -263,16 +292,40 @@ impl<'ast> Visit<'ast> for ContractVisitor {
 
                 let function = args_iter
                     .next()
-                    .map(|a| extract_target_from_expr(a))
+                    .map(|a| extract_invoked_fn_name(a))
                     .unwrap_or_default();
 
-                let remaining_count = args_iter.count();
+                // The remaining argument (if any) is the container holding the
+                // invoked function's arguments — typically a tuple `(&a, &b)`
+                // or a `vec![&env, ...]`. Count its elements.
+                let args_count = args_iter
+                    .next()
+                    .map(count_call_args)
+                    .unwrap_or(0);
 
                 analysis.cross_contract_calls.push(CrossContractCall {
                     target,
                     function,
-                    args_count: remaining_count,
+                    args_count,
                     position: pos,
+                });
+                analysis.calls_external = true;
+            }
+
+            // Check for typed-client cross-contract calls:
+            // `TokenClient::new(&env, &addr).transfer(&from, &to, &amount)`.
+            // Here the method being invoked IS the cross-contract function and the
+            // receiver is the `*Client::new(..)` constructor.
+            if let Some(target) = patterns::detect_client_new(&expr.receiver) {
+                let span = expr.method.span().start();
+                analysis.cross_contract_calls.push(CrossContractCall {
+                    target,
+                    function: method_name.clone(),
+                    args_count: expr.args.len(),
+                    position: SourcePos {
+                        line: span.line,
+                        column: span.column,
+                    },
                 });
                 analysis.calls_external = true;
             }
