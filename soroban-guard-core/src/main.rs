@@ -49,9 +49,12 @@ fn main() -> Result<()> {
     };
 
     let runner = AnalysisRunner::new(config);
-    let report = runner.run()?;
+    let reports = runner.run()?;
 
-    println!("Analysis complete. Score: {}", report.score);
+    for report in &reports {
+        println!("{}", report.summary);
+        println!();
+    }
 
     Ok(())
 }

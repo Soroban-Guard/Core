@@ -10,8 +10,10 @@ use walkdir::WalkDir;
 use crate::config::Config;
 use crate::error::Result;
 use crate::parser::ast::Contract;
+use crate::parser::ContractParser;
 use crate::report::finding::Finding;
 use crate::report::Report;
+use crate::scoring::calculate_score;
 
 pub trait Analyzer {
     fn analyze(&self, source: &str, file_path: &str) -> Vec<Finding>;
@@ -73,6 +75,13 @@ impl AnalysisEngine {
         findings
     }
 
+    /// Run every registered rule against `contract` and produce a scored Report.
+    pub fn analyze_contract(&self, contract: &Contract, source_file: &str) -> Report {
+        let findings = self.run(contract);
+        let score = calculate_score(&findings);
+        Report::new(&contract.name, source_file, findings, score)
+    }
+
     /// Number of registered rules.
     pub fn rule_count(&self) -> usize {
         self.rules.len()
@@ -87,51 +96,43 @@ impl Default for AnalysisEngine {
 
 pub struct AnalysisRunner {
     config: Config,
-    analyzers: Vec<Box<dyn Analyzer + Send + Sync>>,
 }
 
 impl AnalysisRunner {
     pub fn new(config: Config) -> Self {
-        let analyzers: Vec<Box<dyn Analyzer + Send + Sync>> = vec![
-            Box::new(reentrancy::ReentrancyDetector),
-            Box::new(overflow::OverflowChecker),
-            Box::new(access_control::AccessControlDetector),
-            Box::new(storage::StorageCollisionDetector),
-        ];
-
-        AnalysisRunner { config, analyzers }
+        AnalysisRunner { config }
     }
 
-    pub fn run(&self) -> Result<Report> {
-        let mut report = Report::new();
+    pub fn run(&self) -> Result<Vec<Report>> {
+        let mut reports = Vec::new();
 
         for path_str in &self.config.paths {
             let path = Path::new(path_str);
             if path.is_dir() {
-                self.analyze_dir(path, &mut report)?;
+                self.analyze_dir(path, &mut reports)?;
             } else if path.is_file() {
-                self.analyze_file(path, &mut report)?;
+                self.analyze_file(path, &mut reports)?;
             }
         }
 
-        Ok(report)
+        Ok(reports)
     }
 
-    fn analyze_file(&self, path: &Path, report: &mut Report) -> Result<()> {
+    fn analyze_file(&self, path: &Path, reports: &mut Vec<Report>) -> Result<()> {
         let source = std::fs::read_to_string(path)?;
-        for analyzer in &self.analyzers {
-            let findings = analyzer.analyze(&source, &path.to_string_lossy());
-            for finding in findings {
-                report.add_finding(finding);
-            }
+        let parser = ContractParser::new();
+        if let Ok(contract) = parser.parse_source(&source) {
+            let engine = AnalysisEngine::with_default_rules();
+            let report = engine.analyze_contract(&contract, &path.to_string_lossy());
+            reports.push(report);
         }
         Ok(())
     }
 
-    fn analyze_dir(&self, path: &Path, report: &mut Report) -> Result<()> {
+    fn analyze_dir(&self, path: &Path, reports: &mut Vec<Report>) -> Result<()> {
         for entry in WalkDir::new(path).into_iter().filter_map(|e| e.ok()) {
             if entry.path().extension().map_or(false, |ext| ext == "rs") {
-                self.analyze_file(entry.path(), report)?;
+                self.analyze_file(entry.path(), reports)?;
             }
         }
         Ok(())

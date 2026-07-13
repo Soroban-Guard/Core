@@ -10,4 +10,4 @@ pub use config::{Config, OutputFormat, SeverityLevel};
 pub use error::{Result, SorobanGuardError};
 pub use parser::ContractParser;
 pub use report::{finding::Finding, severity::Severity, Report};
-pub use scoring::ScoringEngine;
+pub use scoring::{SecurityScore, SeverityBreakdown};

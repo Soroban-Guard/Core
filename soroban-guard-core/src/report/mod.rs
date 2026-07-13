@@ -1,35 +1,35 @@
 pub mod finding;
 pub mod severity;
 
-use finding::Finding;
-use serde::Serialize;
+use chrono::{DateTime, Utc};
 
-#[derive(Debug, Serialize)]
+use self::finding::Finding;
+use crate::scoring::{generate_summary, SecurityScore};
+
+#[derive(Debug, Clone)]
 pub struct Report {
+    pub contract_name: String,
+    pub source_file: String,
+    pub score: SecurityScore,
     pub findings: Vec<Finding>,
-    pub score: u8,
+    pub summary: String,
+    pub analyzed_at: DateTime<Utc>,
 }
 
 impl Report {
-    pub fn new() -> Self {
+    pub fn new(contract_name: impl Into<String>, source_file: impl Into<String>, findings: Vec<Finding>, score: SecurityScore) -> Self {
+        let summary = generate_summary(&score);
         Report {
-            findings: Vec::new(),
-            score: 100,
+            contract_name: contract_name.into(),
+            source_file: source_file.into(),
+            score,
+            findings,
+            summary,
+            analyzed_at: Utc::now(),
         }
-    }
-
-    pub fn add_finding(&mut self, finding: Finding) {
-        self.score = self.score.saturating_sub(finding.severity.score_penalty());
-        self.findings.push(finding);
     }
 
     pub fn is_empty(&self) -> bool {
         self.findings.is_empty()
-    }
-}
-
-impl Default for Report {
-    fn default() -> Self {
-        Self::new()
     }
 }
