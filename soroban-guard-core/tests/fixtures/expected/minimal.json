@@ -1,0 +1,67 @@
+{
+  "tool": "soroban-guard",
+  "version": "0.1.0",
+  "reports": [
+    {
+      "contract": "Minimal",
+      "file": "tests/fixtures/contracts/minimal.rs",
+      "score": {
+        "overall": 100,
+        "grade": "A",
+        "breakdown": {
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "info": 2
+        },
+        "top_issues": []
+      },
+      "findings": [
+        {
+          "severity": "info",
+          "rule_id": "A-04",
+          "message": "Public function 'greet' has no authorization check — anybody can call",
+          "location": "Minimal",
+          "suggestion": "Add require_auth() with the appropriate Address if this function should be restricted"
+        },
+        {
+          "severity": "info",
+          "rule_id": "S-05",
+          "message": "No version key found — upgrade could cause storage collisions",
+          "location": "Minimal",
+          "suggestion": "Store a VERSION key and use it as prefix for all other keys"
+        }
+      ]
+    }
+  ],
+  "total_score": {
+    "overall": 100,
+    "grade": "A",
+    "breakdown": {
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "info": 2
+    },
+    "top_issues": []
+  },
+  "all_findings": [
+    {
+      "severity": "info",
+      "rule_id": "A-04",
+      "message": "Public function 'greet' has no authorization check — anybody can call",
+      "location": "Minimal",
+      "suggestion": "Add require_auth() with the appropriate Address if this function should be restricted"
+    },
+    {
+      "severity": "info",
+      "rule_id": "S-05",
+      "message": "No version key found — upgrade could cause storage collisions",
+      "location": "Minimal",
+      "suggestion": "Store a VERSION key and use it as prefix for all other keys"
+    }
+  ],
+  "summary": "Security Score: 100/100 (Grade A)\nCritical: 0 | High: 0 | Medium: 0 | Low: 0 | Info: 2\nTop issues: "
+}

@@ -1,0 +1,405 @@
+{
+  "tool": "soroban-guard",
+  "version": "0.1.0",
+  "reports": [
+    {
+      "contract": "AmmPair",
+      "file": "tests/fixtures/contracts/amm_pair.rs",
+      "score": {
+        "overall": 3,
+        "grade": "F",
+        "breakdown": {
+          "critical": 2,
+          "high": 13,
+          "medium": 3,
+          "low": 2,
+          "info": 1
+        },
+        "top_issues": [
+          {
+            "severity": "critical",
+            "rule_id": "R-01",
+            "message": "Function 'add_liquidity' writes to storage after an external call — reentrancy risk",
+            "location": "AmmPair:20:12",
+            "suggestion": "Move state updates before the external call, or use a reentrancy guard"
+          },
+          {
+            "severity": "critical",
+            "rule_id": "R-01",
+            "message": "Function 'swap' writes to storage after an external call — reentrancy risk",
+            "location": "AmmPair:32:12",
+            "suggestion": "Move state updates before the external call, or use a reentrancy guard"
+          },
+          {
+            "severity": "high",
+            "rule_id": "R-04",
+            "message": "Function 'add_liquidity' makes an external call and shares storage key 'v1_reserve_a' with another externally-calling function — cross-function reentrancy risk",
+            "location": "AmmPair:20:12",
+            "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+          },
+          {
+            "severity": "high",
+            "rule_id": "R-04",
+            "message": "Function 'add_liquidity' makes an external call and shares storage key 'v1_reserve_b' with another externally-calling function — cross-function reentrancy risk",
+            "location": "AmmPair:20:12",
+            "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+          },
+          {
+            "severity": "high",
+            "rule_id": "R-04",
+            "message": "Function 'swap' makes an external call and shares storage key 'v1_reserve_a' with another externally-calling function — cross-function reentrancy risk",
+            "location": "AmmPair:32:12",
+            "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+          }
+        ]
+      },
+      "findings": [
+        {
+          "severity": "critical",
+          "rule_id": "R-01",
+          "message": "Function 'add_liquidity' writes to storage after an external call — reentrancy risk",
+          "location": "AmmPair:20:12",
+          "suggestion": "Move state updates before the external call, or use a reentrancy guard"
+        },
+        {
+          "severity": "low",
+          "rule_id": "R-03",
+          "message": "Function 'add_liquidity' makes external calls but no reentrancy guard was found on the contract",
+          "location": "AmmPair:20:12",
+          "suggestion": "Consider adding a reentrancy guard (e.g. a REENTRANCY_GUARD storage flag)"
+        },
+        {
+          "severity": "critical",
+          "rule_id": "R-01",
+          "message": "Function 'swap' writes to storage after an external call — reentrancy risk",
+          "location": "AmmPair:32:12",
+          "suggestion": "Move state updates before the external call, or use a reentrancy guard"
+        },
+        {
+          "severity": "low",
+          "rule_id": "R-03",
+          "message": "Function 'swap' makes external calls but no reentrancy guard was found on the contract",
+          "location": "AmmPair:32:12",
+          "suggestion": "Consider adding a reentrancy guard (e.g. a REENTRANCY_GUARD storage flag)"
+        },
+        {
+          "severity": "high",
+          "rule_id": "R-04",
+          "message": "Function 'add_liquidity' makes an external call and shares storage key 'v1_reserve_a' with another externally-calling function — cross-function reentrancy risk",
+          "location": "AmmPair:20:12",
+          "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+        },
+        {
+          "severity": "high",
+          "rule_id": "R-04",
+          "message": "Function 'add_liquidity' makes an external call and shares storage key 'v1_reserve_b' with another externally-calling function — cross-function reentrancy risk",
+          "location": "AmmPair:20:12",
+          "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+        },
+        {
+          "severity": "high",
+          "rule_id": "R-04",
+          "message": "Function 'swap' makes an external call and shares storage key 'v1_reserve_a' with another externally-calling function — cross-function reentrancy risk",
+          "location": "AmmPair:32:12",
+          "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+        },
+        {
+          "severity": "high",
+          "rule_id": "R-04",
+          "message": "Function 'swap' makes an external call and shares storage key 'v1_reserve_b' with another externally-calling function — cross-function reentrancy risk",
+          "location": "AmmPair:32:12",
+          "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+        },
+        {
+          "severity": "high",
+          "rule_id": "O-01",
+          "message": "Function 'add_liquidity' performs unchecked 'reserve_a + amount_a' on a financial type — possible overflow/underflow",
+          "location": "AmmPair:21:85",
+          "suggestion": "Use reserve_a.checked_add(amount_a) instead of the bare operator"
+        },
+        {
+          "severity": "high",
+          "rule_id": "O-01",
+          "message": "Function 'add_liquidity' performs unchecked 'reserve_b + amount_b' on a financial type — possible overflow/underflow",
+          "location": "AmmPair:22:85",
+          "suggestion": "Use reserve_b.checked_add(amount_b) instead of the bare operator"
+        },
+        {
+          "severity": "medium",
+          "rule_id": "O-03",
+          "message": "Function 'swap' divides by unchecked divisor '(reserve_a+amount_in)' — possible division by zero",
+          "location": "AmmPair:28:49",
+          "suggestion": "Check '(reserve_a+amount_in)' for zero before dividing, or use checked_div"
+        },
+        {
+          "severity": "high",
+          "rule_id": "O-01",
+          "message": "Function 'swap' performs unchecked 'reserve_b * amount_in' on a financial type — possible overflow/underflow",
+          "location": "AmmPair:28:36",
+          "suggestion": "Use reserve_b.checked_mul(amount_in) instead of the bare operator"
+        },
+        {
+          "severity": "high",
+          "rule_id": "O-01",
+          "message": "Function 'swap' performs unchecked 'reserve_a + amount_in' on a financial type — possible overflow/underflow",
+          "location": "AmmPair:28:62",
+          "suggestion": "Use reserve_a.checked_add(amount_in) instead of the bare operator"
+        },
+        {
+          "severity": "high",
+          "rule_id": "O-01",
+          "message": "Function 'swap' performs unchecked 'reserve_a + amount_in' on a financial type — possible overflow/underflow",
+          "location": "AmmPair:33:85",
+          "suggestion": "Use reserve_a.checked_add(amount_in) instead of the bare operator"
+        },
+        {
+          "severity": "high",
+          "rule_id": "A-01",
+          "message": "Function 'add_liquidity' modifies state without authorization check",
+          "location": "AmmPair:21:33",
+          "suggestion": "Add require_auth() with the appropriate Address at the start of this function"
+        },
+        {
+          "severity": "medium",
+          "rule_id": "A-04",
+          "message": "Function 'add_liquidity' takes Address parameter 'to' but doesn't authenticate it",
+          "location": "AmmPair",
+          "suggestion": "Use require_auth() with the Address parameter to ensure only that user can call"
+        },
+        {
+          "severity": "high",
+          "rule_id": "A-01",
+          "message": "Function 'swap' modifies state without authorization check",
+          "location": "AmmPair:33:33",
+          "suggestion": "Add require_auth() with the appropriate Address at the start of this function"
+        },
+        {
+          "severity": "medium",
+          "rule_id": "A-04",
+          "message": "Function 'swap' takes Address parameter 'to' but doesn't authenticate it",
+          "location": "AmmPair",
+          "suggestion": "Use require_auth() with the Address parameter to ensure only that user can call"
+        },
+        {
+          "severity": "info",
+          "rule_id": "A-04",
+          "message": "Public function 'get_reserves' has no authorization check — anybody can call",
+          "location": "AmmPair",
+          "suggestion": "Add require_auth() with the appropriate Address if this function should be restricted"
+        },
+        {
+          "severity": "high",
+          "rule_id": "S-03",
+          "message": "Storage key 'v1_reserve_a' written with different value types: '0i128' in '__constructor' and '(reserve_a + amount_a)' in 'add_liquidity'",
+          "location": "AmmPair:13:33",
+          "suggestion": "Use the same Rust type for all writes to this key, or rename one of the keys"
+        },
+        {
+          "severity": "high",
+          "rule_id": "S-03",
+          "message": "Storage key 'v1_reserve_b' written with different value types: '0i128' in '__constructor' and '(reserve_b + amount_b)' in 'add_liquidity'",
+          "location": "AmmPair:14:33",
+          "suggestion": "Use the same Rust type for all writes to this key, or rename one of the keys"
+        }
+      ]
+    }
+  ],
+  "total_score": {
+    "overall": 3,
+    "grade": "F",
+    "breakdown": {
+      "critical": 2,
+      "high": 13,
+      "medium": 3,
+      "low": 2,
+      "info": 1
+    },
+    "top_issues": [
+      {
+        "severity": "critical",
+        "rule_id": "R-01",
+        "message": "Function 'add_liquidity' writes to storage after an external call — reentrancy risk",
+        "location": "AmmPair:20:12",
+        "suggestion": "Move state updates before the external call, or use a reentrancy guard"
+      },
+      {
+        "severity": "critical",
+        "rule_id": "R-01",
+        "message": "Function 'swap' writes to storage after an external call — reentrancy risk",
+        "location": "AmmPair:32:12",
+        "suggestion": "Move state updates before the external call, or use a reentrancy guard"
+      },
+      {
+        "severity": "high",
+        "rule_id": "R-04",
+        "message": "Function 'add_liquidity' makes an external call and shares storage key 'v1_reserve_a' with another externally-calling function — cross-function reentrancy risk",
+        "location": "AmmPair:20:12",
+        "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+      },
+      {
+        "severity": "high",
+        "rule_id": "R-04",
+        "message": "Function 'add_liquidity' makes an external call and shares storage key 'v1_reserve_b' with another externally-calling function — cross-function reentrancy risk",
+        "location": "AmmPair:20:12",
+        "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+      },
+      {
+        "severity": "high",
+        "rule_id": "R-04",
+        "message": "Function 'swap' makes an external call and shares storage key 'v1_reserve_a' with another externally-calling function — cross-function reentrancy risk",
+        "location": "AmmPair:32:12",
+        "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+      }
+    ]
+  },
+  "all_findings": [
+    {
+      "severity": "critical",
+      "rule_id": "R-01",
+      "message": "Function 'add_liquidity' writes to storage after an external call — reentrancy risk",
+      "location": "AmmPair:20:12",
+      "suggestion": "Move state updates before the external call, or use a reentrancy guard"
+    },
+    {
+      "severity": "low",
+      "rule_id": "R-03",
+      "message": "Function 'add_liquidity' makes external calls but no reentrancy guard was found on the contract",
+      "location": "AmmPair:20:12",
+      "suggestion": "Consider adding a reentrancy guard (e.g. a REENTRANCY_GUARD storage flag)"
+    },
+    {
+      "severity": "critical",
+      "rule_id": "R-01",
+      "message": "Function 'swap' writes to storage after an external call — reentrancy risk",
+      "location": "AmmPair:32:12",
+      "suggestion": "Move state updates before the external call, or use a reentrancy guard"
+    },
+    {
+      "severity": "low",
+      "rule_id": "R-03",
+      "message": "Function 'swap' makes external calls but no reentrancy guard was found on the contract",
+      "location": "AmmPair:32:12",
+      "suggestion": "Consider adding a reentrancy guard (e.g. a REENTRANCY_GUARD storage flag)"
+    },
+    {
+      "severity": "high",
+      "rule_id": "R-04",
+      "message": "Function 'add_liquidity' makes an external call and shares storage key 'v1_reserve_a' with another externally-calling function — cross-function reentrancy risk",
+      "location": "AmmPair:20:12",
+      "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+    },
+    {
+      "severity": "high",
+      "rule_id": "R-04",
+      "message": "Function 'add_liquidity' makes an external call and shares storage key 'v1_reserve_b' with another externally-calling function — cross-function reentrancy risk",
+      "location": "AmmPair:20:12",
+      "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+    },
+    {
+      "severity": "high",
+      "rule_id": "R-04",
+      "message": "Function 'swap' makes an external call and shares storage key 'v1_reserve_a' with another externally-calling function — cross-function reentrancy risk",
+      "location": "AmmPair:32:12",
+      "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+    },
+    {
+      "severity": "high",
+      "rule_id": "R-04",
+      "message": "Function 'swap' makes an external call and shares storage key 'v1_reserve_b' with another externally-calling function — cross-function reentrancy risk",
+      "location": "AmmPair:32:12",
+      "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+    },
+    {
+      "severity": "high",
+      "rule_id": "O-01",
+      "message": "Function 'add_liquidity' performs unchecked 'reserve_a + amount_a' on a financial type — possible overflow/underflow",
+      "location": "AmmPair:21:85",
+      "suggestion": "Use reserve_a.checked_add(amount_a) instead of the bare operator"
+    },
+    {
+      "severity": "high",
+      "rule_id": "O-01",
+      "message": "Function 'add_liquidity' performs unchecked 'reserve_b + amount_b' on a financial type — possible overflow/underflow",
+      "location": "AmmPair:22:85",
+      "suggestion": "Use reserve_b.checked_add(amount_b) instead of the bare operator"
+    },
+    {
+      "severity": "medium",
+      "rule_id": "O-03",
+      "message": "Function 'swap' divides by unchecked divisor '(reserve_a+amount_in)' — possible division by zero",
+      "location": "AmmPair:28:49",
+      "suggestion": "Check '(reserve_a+amount_in)' for zero before dividing, or use checked_div"
+    },
+    {
+      "severity": "high",
+      "rule_id": "O-01",
+      "message": "Function 'swap' performs unchecked 'reserve_b * amount_in' on a financial type — possible overflow/underflow",
+      "location": "AmmPair:28:36",
+      "suggestion": "Use reserve_b.checked_mul(amount_in) instead of the bare operator"
+    },
+    {
+      "severity": "high",
+      "rule_id": "O-01",
+      "message": "Function 'swap' performs unchecked 'reserve_a + amount_in' on a financial type — possible overflow/underflow",
+      "location": "AmmPair:28:62",
+      "suggestion": "Use reserve_a.checked_add(amount_in) instead of the bare operator"
+    },
+    {
+      "severity": "high",
+      "rule_id": "O-01",
+      "message": "Function 'swap' performs unchecked 'reserve_a + amount_in' on a financial type — possible overflow/underflow",
+      "location": "AmmPair:33:85",
+      "suggestion": "Use reserve_a.checked_add(amount_in) instead of the bare operator"
+    },
+    {
+      "severity": "high",
+      "rule_id": "A-01",
+      "message": "Function 'add_liquidity' modifies state without authorization check",
+      "location": "AmmPair:21:33",
+      "suggestion": "Add require_auth() with the appropriate Address at the start of this function"
+    },
+    {
+      "severity": "medium",
+      "rule_id": "A-04",
+      "message": "Function 'add_liquidity' takes Address parameter 'to' but doesn't authenticate it",
+      "location": "AmmPair",
+      "suggestion": "Use require_auth() with the Address parameter to ensure only that user can call"
+    },
+    {
+      "severity": "high",
+      "rule_id": "A-01",
+      "message": "Function 'swap' modifies state without authorization check",
+      "location": "AmmPair:33:33",
+      "suggestion": "Add require_auth() with the appropriate Address at the start of this function"
+    },
+    {
+      "severity": "medium",
+      "rule_id": "A-04",
+      "message": "Function 'swap' takes Address parameter 'to' but doesn't authenticate it",
+      "location": "AmmPair",
+      "suggestion": "Use require_auth() with the Address parameter to ensure only that user can call"
+    },
+    {
+      "severity": "info",
+      "rule_id": "A-04",
+      "message": "Public function 'get_reserves' has no authorization check — anybody can call",
+      "location": "AmmPair",
+      "suggestion": "Add require_auth() with the appropriate Address if this function should be restricted"
+    },
+    {
+      "severity": "high",
+      "rule_id": "S-03",
+      "message": "Storage key 'v1_reserve_a' written with different value types: '0i128' in '__constructor' and '(reserve_a + amount_a)' in 'add_liquidity'",
+      "location": "AmmPair:13:33",
+      "suggestion": "Use the same Rust type for all writes to this key, or rename one of the keys"
+    },
+    {
+      "severity": "high",
+      "rule_id": "S-03",
+      "message": "Storage key 'v1_reserve_b' written with different value types: '0i128' in '__constructor' and '(reserve_b + amount_b)' in 'add_liquidity'",
+      "location": "AmmPair:14:33",
+      "suggestion": "Use the same Rust type for all writes to this key, or rename one of the keys"
+    }
+  ],
+  "summary": "Security Score: 3/100 (Grade F)\nCritical: 2 | High: 13 | Medium: 3 | Low: 2 | Info: 1\nTop issues: Function 'add_liquidity' writes to storage after an external call — reentrancy risk, Function 'swap' writes to storage after an external call — reentrancy risk, Function 'add_liquidity' makes an external call and shares storage key 'v1_reserve_a' with another externally-calling function — cross-function reentrancy risk, Function 'add_liquidity' makes an external call and shares storage key 'v1_reserve_b' with another externally-calling function — cross-function reentrancy risk, Function 'swap' makes an external call and shares storage key 'v1_reserve_a' with another externally-calling function — cross-function reentrancy risk"
+}

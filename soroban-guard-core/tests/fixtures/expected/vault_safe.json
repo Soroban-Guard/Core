@@ -1,0 +1,97 @@
+{
+  "tool": "soroban-guard",
+  "version": "0.1.0",
+  "reports": [
+    {
+      "contract": "SafeVault",
+      "file": "tests/fixtures/contracts/vault_safe.rs",
+      "score": {
+        "overall": 84,
+        "grade": "B",
+        "breakdown": {
+          "critical": 0,
+          "high": 1,
+          "medium": 0,
+          "low": 1,
+          "info": 1
+        },
+        "top_issues": [
+          {
+            "severity": "high",
+            "rule_id": "S-03",
+            "message": "Storage key 'v1_balance' written with different value types: '0i128' in '__constructor' and 'balance . checked_add (amount) . unwrap ()' in 'deposit'",
+            "location": "SafeVault:12:33",
+            "suggestion": "Use the same Rust type for all writes to this key, or rename one of the keys"
+          }
+        ]
+      },
+      "findings": [
+        {
+          "severity": "low",
+          "rule_id": "R-03",
+          "message": "Function 'withdraw' makes external calls but no reentrancy guard was found on the contract",
+          "location": "SafeVault:25:12",
+          "suggestion": "Consider adding a reentrancy guard (e.g. a REENTRANCY_GUARD storage flag)"
+        },
+        {
+          "severity": "info",
+          "rule_id": "A-04",
+          "message": "Public function 'balance' has no authorization check — anybody can call",
+          "location": "SafeVault",
+          "suggestion": "Add require_auth() with the appropriate Address if this function should be restricted"
+        },
+        {
+          "severity": "high",
+          "rule_id": "S-03",
+          "message": "Storage key 'v1_balance' written with different value types: '0i128' in '__constructor' and 'balance . checked_add (amount) . unwrap ()' in 'deposit'",
+          "location": "SafeVault:12:33",
+          "suggestion": "Use the same Rust type for all writes to this key, or rename one of the keys"
+        }
+      ]
+    }
+  ],
+  "total_score": {
+    "overall": 84,
+    "grade": "B",
+    "breakdown": {
+      "critical": 0,
+      "high": 1,
+      "medium": 0,
+      "low": 1,
+      "info": 1
+    },
+    "top_issues": [
+      {
+        "severity": "high",
+        "rule_id": "S-03",
+        "message": "Storage key 'v1_balance' written with different value types: '0i128' in '__constructor' and 'balance . checked_add (amount) . unwrap ()' in 'deposit'",
+        "location": "SafeVault:12:33",
+        "suggestion": "Use the same Rust type for all writes to this key, or rename one of the keys"
+      }
+    ]
+  },
+  "all_findings": [
+    {
+      "severity": "low",
+      "rule_id": "R-03",
+      "message": "Function 'withdraw' makes external calls but no reentrancy guard was found on the contract",
+      "location": "SafeVault:25:12",
+      "suggestion": "Consider adding a reentrancy guard (e.g. a REENTRANCY_GUARD storage flag)"
+    },
+    {
+      "severity": "info",
+      "rule_id": "A-04",
+      "message": "Public function 'balance' has no authorization check — anybody can call",
+      "location": "SafeVault",
+      "suggestion": "Add require_auth() with the appropriate Address if this function should be restricted"
+    },
+    {
+      "severity": "high",
+      "rule_id": "S-03",
+      "message": "Storage key 'v1_balance' written with different value types: '0i128' in '__constructor' and 'balance . checked_add (amount) . unwrap ()' in 'deposit'",
+      "location": "SafeVault:12:33",
+      "suggestion": "Use the same Rust type for all writes to this key, or rename one of the keys"
+    }
+  ],
+  "summary": "Security Score: 84/100 (Grade B)\nCritical: 0 | High: 1 | Medium: 0 | Low: 1 | Info: 1\nTop issues: Storage key 'v1_balance' written with different value types: '0i128' in '__constructor' and 'balance . checked_add (amount) . unwrap ()' in 'deposit'"
+}

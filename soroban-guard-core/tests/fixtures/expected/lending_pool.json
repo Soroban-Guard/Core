@@ -1,0 +1,265 @@
+{
+  "tool": "soroban-guard",
+  "version": "0.1.0",
+  "reports": [
+    {
+      "contract": "LendingPool",
+      "file": "tests/fixtures/contracts/lending_pool.rs",
+      "score": {
+        "overall": 3,
+        "grade": "F",
+        "breakdown": {
+          "critical": 1,
+          "high": 7,
+          "medium": 1,
+          "low": 2,
+          "info": 0
+        },
+        "top_issues": [
+          {
+            "severity": "critical",
+            "rule_id": "R-01",
+            "message": "Function 'liquidate' writes to storage after an external call — reentrancy risk",
+            "location": "LendingPool:40:16",
+            "suggestion": "Move state updates before the external call, or use a reentrancy guard"
+          },
+          {
+            "severity": "high",
+            "rule_id": "R-04",
+            "message": "Function 'borrow' makes an external call and shares storage key 'v1_borrowed' with another externally-calling function — cross-function reentrancy risk",
+            "location": "LendingPool:26:16",
+            "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+          },
+          {
+            "severity": "high",
+            "rule_id": "R-04",
+            "message": "Function 'borrow' makes an external call and shares storage key 'v1_collateral' with another externally-calling function — cross-function reentrancy risk",
+            "location": "LendingPool:26:16",
+            "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+          },
+          {
+            "severity": "high",
+            "rule_id": "R-04",
+            "message": "Function 'liquidate' makes an external call and shares storage key 'v1_borrowed' with another externally-calling function — cross-function reentrancy risk",
+            "location": "LendingPool:40:16",
+            "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+          },
+          {
+            "severity": "high",
+            "rule_id": "R-04",
+            "message": "Function 'liquidate' makes an external call and shares storage key 'v1_collateral' with another externally-calling function — cross-function reentrancy risk",
+            "location": "LendingPool:40:16",
+            "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+          }
+        ]
+      },
+      "findings": [
+        {
+          "severity": "low",
+          "rule_id": "R-03",
+          "message": "Function 'borrow' makes external calls but no reentrancy guard was found on the contract",
+          "location": "LendingPool:26:16",
+          "suggestion": "Consider adding a reentrancy guard (e.g. a REENTRANCY_GUARD storage flag)"
+        },
+        {
+          "severity": "critical",
+          "rule_id": "R-01",
+          "message": "Function 'liquidate' writes to storage after an external call — reentrancy risk",
+          "location": "LendingPool:40:16",
+          "suggestion": "Move state updates before the external call, or use a reentrancy guard"
+        },
+        {
+          "severity": "low",
+          "rule_id": "R-03",
+          "message": "Function 'liquidate' makes external calls but no reentrancy guard was found on the contract",
+          "location": "LendingPool:40:16",
+          "suggestion": "Consider adding a reentrancy guard (e.g. a REENTRANCY_GUARD storage flag)"
+        },
+        {
+          "severity": "high",
+          "rule_id": "R-04",
+          "message": "Function 'borrow' makes an external call and shares storage key 'v1_borrowed' with another externally-calling function — cross-function reentrancy risk",
+          "location": "LendingPool:26:16",
+          "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+        },
+        {
+          "severity": "high",
+          "rule_id": "R-04",
+          "message": "Function 'borrow' makes an external call and shares storage key 'v1_collateral' with another externally-calling function — cross-function reentrancy risk",
+          "location": "LendingPool:26:16",
+          "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+        },
+        {
+          "severity": "high",
+          "rule_id": "R-04",
+          "message": "Function 'liquidate' makes an external call and shares storage key 'v1_borrowed' with another externally-calling function — cross-function reentrancy risk",
+          "location": "LendingPool:40:16",
+          "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+        },
+        {
+          "severity": "high",
+          "rule_id": "R-04",
+          "message": "Function 'liquidate' makes an external call and shares storage key 'v1_collateral' with another externally-calling function — cross-function reentrancy risk",
+          "location": "LendingPool:40:16",
+          "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+        },
+        {
+          "severity": "high",
+          "rule_id": "O-01",
+          "message": "Function 'borrow' performs unchecked 'total_borrowed + amount' on a financial type — possible overflow/underflow",
+          "location": "LendingPool:25:93",
+          "suggestion": "Use total_borrowed.checked_add(amount) instead of the bare operator"
+        },
+        {
+          "severity": "high",
+          "rule_id": "A-01",
+          "message": "Function 'liquidate' modifies state without authorization check",
+          "location": "LendingPool:41:37",
+          "suggestion": "Add require_auth() with the appropriate Address at the start of this function"
+        },
+        {
+          "severity": "medium",
+          "rule_id": "A-04",
+          "message": "Function 'liquidate' takes Address parameter 'caller' but doesn't authenticate it",
+          "location": "LendingPool",
+          "suggestion": "Use require_auth() with the Address parameter to ensure only that user can call"
+        },
+        {
+          "severity": "high",
+          "rule_id": "S-03",
+          "message": "Storage key 'v1_borrowed' written with different value types: '(total_borrowed + amount)' in 'borrow' and '0i128' in 'liquidate'",
+          "location": "LendingPool:25:37",
+          "suggestion": "Use the same Rust type for all writes to this key, or rename one of the keys"
+        }
+      ]
+    }
+  ],
+  "total_score": {
+    "overall": 3,
+    "grade": "F",
+    "breakdown": {
+      "critical": 1,
+      "high": 7,
+      "medium": 1,
+      "low": 2,
+      "info": 0
+    },
+    "top_issues": [
+      {
+        "severity": "critical",
+        "rule_id": "R-01",
+        "message": "Function 'liquidate' writes to storage after an external call — reentrancy risk",
+        "location": "LendingPool:40:16",
+        "suggestion": "Move state updates before the external call, or use a reentrancy guard"
+      },
+      {
+        "severity": "high",
+        "rule_id": "R-04",
+        "message": "Function 'borrow' makes an external call and shares storage key 'v1_borrowed' with another externally-calling function — cross-function reentrancy risk",
+        "location": "LendingPool:26:16",
+        "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+      },
+      {
+        "severity": "high",
+        "rule_id": "R-04",
+        "message": "Function 'borrow' makes an external call and shares storage key 'v1_collateral' with another externally-calling function — cross-function reentrancy risk",
+        "location": "LendingPool:26:16",
+        "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+      },
+      {
+        "severity": "high",
+        "rule_id": "R-04",
+        "message": "Function 'liquidate' makes an external call and shares storage key 'v1_borrowed' with another externally-calling function — cross-function reentrancy risk",
+        "location": "LendingPool:40:16",
+        "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+      },
+      {
+        "severity": "high",
+        "rule_id": "R-04",
+        "message": "Function 'liquidate' makes an external call and shares storage key 'v1_collateral' with another externally-calling function — cross-function reentrancy risk",
+        "location": "LendingPool:40:16",
+        "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+      }
+    ]
+  },
+  "all_findings": [
+    {
+      "severity": "low",
+      "rule_id": "R-03",
+      "message": "Function 'borrow' makes external calls but no reentrancy guard was found on the contract",
+      "location": "LendingPool:26:16",
+      "suggestion": "Consider adding a reentrancy guard (e.g. a REENTRANCY_GUARD storage flag)"
+    },
+    {
+      "severity": "critical",
+      "rule_id": "R-01",
+      "message": "Function 'liquidate' writes to storage after an external call — reentrancy risk",
+      "location": "LendingPool:40:16",
+      "suggestion": "Move state updates before the external call, or use a reentrancy guard"
+    },
+    {
+      "severity": "low",
+      "rule_id": "R-03",
+      "message": "Function 'liquidate' makes external calls but no reentrancy guard was found on the contract",
+      "location": "LendingPool:40:16",
+      "suggestion": "Consider adding a reentrancy guard (e.g. a REENTRANCY_GUARD storage flag)"
+    },
+    {
+      "severity": "high",
+      "rule_id": "R-04",
+      "message": "Function 'borrow' makes an external call and shares storage key 'v1_borrowed' with another externally-calling function — cross-function reentrancy risk",
+      "location": "LendingPool:26:16",
+      "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+    },
+    {
+      "severity": "high",
+      "rule_id": "R-04",
+      "message": "Function 'borrow' makes an external call and shares storage key 'v1_collateral' with another externally-calling function — cross-function reentrancy risk",
+      "location": "LendingPool:26:16",
+      "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+    },
+    {
+      "severity": "high",
+      "rule_id": "R-04",
+      "message": "Function 'liquidate' makes an external call and shares storage key 'v1_borrowed' with another externally-calling function — cross-function reentrancy risk",
+      "location": "LendingPool:40:16",
+      "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+    },
+    {
+      "severity": "high",
+      "rule_id": "R-04",
+      "message": "Function 'liquidate' makes an external call and shares storage key 'v1_collateral' with another externally-calling function — cross-function reentrancy risk",
+      "location": "LendingPool:40:16",
+      "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+    },
+    {
+      "severity": "high",
+      "rule_id": "O-01",
+      "message": "Function 'borrow' performs unchecked 'total_borrowed + amount' on a financial type — possible overflow/underflow",
+      "location": "LendingPool:25:93",
+      "suggestion": "Use total_borrowed.checked_add(amount) instead of the bare operator"
+    },
+    {
+      "severity": "high",
+      "rule_id": "A-01",
+      "message": "Function 'liquidate' modifies state without authorization check",
+      "location": "LendingPool:41:37",
+      "suggestion": "Add require_auth() with the appropriate Address at the start of this function"
+    },
+    {
+      "severity": "medium",
+      "rule_id": "A-04",
+      "message": "Function 'liquidate' takes Address parameter 'caller' but doesn't authenticate it",
+      "location": "LendingPool",
+      "suggestion": "Use require_auth() with the Address parameter to ensure only that user can call"
+    },
+    {
+      "severity": "high",
+      "rule_id": "S-03",
+      "message": "Storage key 'v1_borrowed' written with different value types: '(total_borrowed + amount)' in 'borrow' and '0i128' in 'liquidate'",
+      "location": "LendingPool:25:37",
+      "suggestion": "Use the same Rust type for all writes to this key, or rename one of the keys"
+    }
+  ],
+  "summary": "Security Score: 3/100 (Grade F)\nCritical: 1 | High: 7 | Medium: 1 | Low: 2 | Info: 0\nTop issues: Function 'liquidate' writes to storage after an external call — reentrancy risk, Function 'borrow' makes an external call and shares storage key 'v1_borrowed' with another externally-calling function — cross-function reentrancy risk, Function 'borrow' makes an external call and shares storage key 'v1_collateral' with another externally-calling function — cross-function reentrancy risk, Function 'liquidate' makes an external call and shares storage key 'v1_borrowed' with another externally-calling function — cross-function reentrancy risk, Function 'liquidate' makes an external call and shares storage key 'v1_collateral' with another externally-calling function — cross-function reentrancy risk"
+}

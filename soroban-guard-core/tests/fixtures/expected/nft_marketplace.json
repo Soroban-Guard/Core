@@ -1,0 +1,209 @@
+{
+  "tool": "soroban-guard",
+  "version": "0.1.0",
+  "reports": [
+    {
+      "contract": "NFTMarketplace",
+      "file": "tests/fixtures/contracts/nft_marketplace.rs",
+      "score": {
+        "overall": 18,
+        "grade": "F",
+        "breakdown": {
+          "critical": 1,
+          "high": 3,
+          "medium": 0,
+          "low": 3,
+          "info": 1
+        },
+        "top_issues": [
+          {
+            "severity": "critical",
+            "rule_id": "A-01",
+            "message": "Function 'set_fee' modifies state without authorization check",
+            "location": "NFTMarketplace:28:33",
+            "suggestion": "Add require_auth() with the appropriate Address at the start of this function"
+          },
+          {
+            "severity": "high",
+            "rule_id": "A-02",
+            "message": "Admin function 'set_fee' is missing authorization check",
+            "location": "NFTMarketplace:28:33",
+            "suggestion": "Add require_auth() with the admin Address at the start of this function"
+          },
+          {
+            "severity": "high",
+            "rule_id": "A-04",
+            "message": "Public function 'set_fee' has no authorization check and modifies state — anybody can call",
+            "location": "NFTMarketplace",
+            "suggestion": "Add require_auth() with the appropriate Address if this function should be restricted"
+          },
+          {
+            "severity": "high",
+            "rule_id": "S-03",
+            "message": "Storage key 'fee' written with different value types: 'fee' in 'buy' and 'new_fee' in 'set_fee'",
+            "location": "NFTMarketplace:23:33",
+            "suggestion": "Use the same Rust type for all writes to this key, or rename one of the keys"
+          }
+        ]
+      },
+      "findings": [
+        {
+          "severity": "low",
+          "rule_id": "R-03",
+          "message": "Function 'buy' makes external calls but no reentrancy guard was found on the contract",
+          "location": "NFTMarketplace:24:12",
+          "suggestion": "Consider adding a reentrancy guard (e.g. a REENTRANCY_GUARD storage flag)"
+        },
+        {
+          "severity": "critical",
+          "rule_id": "A-01",
+          "message": "Function 'set_fee' modifies state without authorization check",
+          "location": "NFTMarketplace:28:33",
+          "suggestion": "Add require_auth() with the appropriate Address at the start of this function"
+        },
+        {
+          "severity": "high",
+          "rule_id": "A-02",
+          "message": "Admin function 'set_fee' is missing authorization check",
+          "location": "NFTMarketplace:28:33",
+          "suggestion": "Add require_auth() with the admin Address at the start of this function"
+        },
+        {
+          "severity": "high",
+          "rule_id": "A-04",
+          "message": "Public function 'set_fee' has no authorization check and modifies state — anybody can call",
+          "location": "NFTMarketplace",
+          "suggestion": "Add require_auth() with the appropriate Address if this function should be restricted"
+        },
+        {
+          "severity": "info",
+          "rule_id": "A-04",
+          "message": "Public function 'total_listings' has no authorization check — anybody can call",
+          "location": "NFTMarketplace",
+          "suggestion": "Add require_auth() with the appropriate Address if this function should be restricted"
+        },
+        {
+          "severity": "low",
+          "rule_id": "S-02",
+          "message": "Generic storage key 'count' — consider adding a namespace prefix",
+          "location": "NFTMarketplace:32:33",
+          "suggestion": "Prefix with contract version: 'v1_{contract_name}_{key}'"
+        },
+        {
+          "severity": "low",
+          "rule_id": "S-02",
+          "message": "Generic storage key 'admin' — consider adding a namespace prefix",
+          "location": "NFTMarketplace:11:33",
+          "suggestion": "Prefix with contract version: 'v1_{contract_name}_{key}'"
+        },
+        {
+          "severity": "high",
+          "rule_id": "S-03",
+          "message": "Storage key 'fee' written with different value types: 'fee' in 'buy' and 'new_fee' in 'set_fee'",
+          "location": "NFTMarketplace:23:33",
+          "suggestion": "Use the same Rust type for all writes to this key, or rename one of the keys"
+        }
+      ]
+    }
+  ],
+  "total_score": {
+    "overall": 18,
+    "grade": "F",
+    "breakdown": {
+      "critical": 1,
+      "high": 3,
+      "medium": 0,
+      "low": 3,
+      "info": 1
+    },
+    "top_issues": [
+      {
+        "severity": "critical",
+        "rule_id": "A-01",
+        "message": "Function 'set_fee' modifies state without authorization check",
+        "location": "NFTMarketplace:28:33",
+        "suggestion": "Add require_auth() with the appropriate Address at the start of this function"
+      },
+      {
+        "severity": "high",
+        "rule_id": "A-02",
+        "message": "Admin function 'set_fee' is missing authorization check",
+        "location": "NFTMarketplace:28:33",
+        "suggestion": "Add require_auth() with the admin Address at the start of this function"
+      },
+      {
+        "severity": "high",
+        "rule_id": "A-04",
+        "message": "Public function 'set_fee' has no authorization check and modifies state — anybody can call",
+        "location": "NFTMarketplace",
+        "suggestion": "Add require_auth() with the appropriate Address if this function should be restricted"
+      },
+      {
+        "severity": "high",
+        "rule_id": "S-03",
+        "message": "Storage key 'fee' written with different value types: 'fee' in 'buy' and 'new_fee' in 'set_fee'",
+        "location": "NFTMarketplace:23:33",
+        "suggestion": "Use the same Rust type for all writes to this key, or rename one of the keys"
+      }
+    ]
+  },
+  "all_findings": [
+    {
+      "severity": "low",
+      "rule_id": "R-03",
+      "message": "Function 'buy' makes external calls but no reentrancy guard was found on the contract",
+      "location": "NFTMarketplace:24:12",
+      "suggestion": "Consider adding a reentrancy guard (e.g. a REENTRANCY_GUARD storage flag)"
+    },
+    {
+      "severity": "critical",
+      "rule_id": "A-01",
+      "message": "Function 'set_fee' modifies state without authorization check",
+      "location": "NFTMarketplace:28:33",
+      "suggestion": "Add require_auth() with the appropriate Address at the start of this function"
+    },
+    {
+      "severity": "high",
+      "rule_id": "A-02",
+      "message": "Admin function 'set_fee' is missing authorization check",
+      "location": "NFTMarketplace:28:33",
+      "suggestion": "Add require_auth() with the admin Address at the start of this function"
+    },
+    {
+      "severity": "high",
+      "rule_id": "A-04",
+      "message": "Public function 'set_fee' has no authorization check and modifies state — anybody can call",
+      "location": "NFTMarketplace",
+      "suggestion": "Add require_auth() with the appropriate Address if this function should be restricted"
+    },
+    {
+      "severity": "info",
+      "rule_id": "A-04",
+      "message": "Public function 'total_listings' has no authorization check — anybody can call",
+      "location": "NFTMarketplace",
+      "suggestion": "Add require_auth() with the appropriate Address if this function should be restricted"
+    },
+    {
+      "severity": "low",
+      "rule_id": "S-02",
+      "message": "Generic storage key 'count' — consider adding a namespace prefix",
+      "location": "NFTMarketplace:32:33",
+      "suggestion": "Prefix with contract version: 'v1_{contract_name}_{key}'"
+    },
+    {
+      "severity": "low",
+      "rule_id": "S-02",
+      "message": "Generic storage key 'admin' — consider adding a namespace prefix",
+      "location": "NFTMarketplace:11:33",
+      "suggestion": "Prefix with contract version: 'v1_{contract_name}_{key}'"
+    },
+    {
+      "severity": "high",
+      "rule_id": "S-03",
+      "message": "Storage key 'fee' written with different value types: 'fee' in 'buy' and 'new_fee' in 'set_fee'",
+      "location": "NFTMarketplace:23:33",
+      "suggestion": "Use the same Rust type for all writes to this key, or rename one of the keys"
+    }
+  ],
+  "summary": "Security Score: 18/100 (Grade F)\nCritical: 1 | High: 3 | Medium: 0 | Low: 3 | Info: 1\nTop issues: Function 'set_fee' modifies state without authorization check, Admin function 'set_fee' is missing authorization check, Public function 'set_fee' has no authorization check and modifies state — anybody can call, Storage key 'fee' written with different value types: 'fee' in 'buy' and 'new_fee' in 'set_fee'"
+}

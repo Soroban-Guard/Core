@@ -1,0 +1,503 @@
+{
+  "tool": "soroban-guard",
+  "version": "0.1.0",
+  "reports": [
+    {
+      "contract": "VulnerableVault",
+      "file": "tests/fixtures/contracts/vault_vulnerable.rs",
+      "score": {
+        "overall": 0,
+        "grade": "F",
+        "breakdown": {
+          "critical": 3,
+          "high": 16,
+          "medium": 6,
+          "low": 2,
+          "info": 1
+        },
+        "top_issues": [
+          {
+            "severity": "critical",
+            "rule_id": "R-01",
+            "message": "Function 'transfer' writes to storage after an external call — reentrancy risk",
+            "location": "VulnerableVault:34:12",
+            "suggestion": "Move state updates before the external call, or use a reentrancy guard"
+          },
+          {
+            "severity": "high",
+            "rule_id": "R-04",
+            "message": "Function 'withdraw' makes an external call and shares storage key 'a' with another externally-calling function — cross-function reentrancy risk",
+            "location": "VulnerableVault:28:12",
+            "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+          },
+          {
+            "severity": "high",
+            "rule_id": "R-04",
+            "message": "Function 'transfer' makes an external call and shares storage key 'a' with another externally-calling function — cross-function reentrancy risk",
+            "location": "VulnerableVault:34:12",
+            "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+          },
+          {
+            "severity": "high",
+            "rule_id": "O-01",
+            "message": "Function 'deposit' performs unchecked 'balance + amount' on a financial type — possible overflow/underflow",
+            "location": "VulnerableVault:20:72",
+            "suggestion": "Use balance.checked_add(amount) instead of the bare operator"
+          },
+          {
+            "severity": "high",
+            "rule_id": "O-01",
+            "message": "Function 'withdraw' performs unchecked 'balance - amount' on a financial type — possible overflow/underflow",
+            "location": "VulnerableVault:27:72",
+            "suggestion": "Use balance.checked_sub(amount) instead of the bare operator"
+          }
+        ]
+      },
+      "findings": [
+        {
+          "severity": "low",
+          "rule_id": "R-03",
+          "message": "Function 'withdraw' makes external calls but no reentrancy guard was found on the contract",
+          "location": "VulnerableVault:28:12",
+          "suggestion": "Consider adding a reentrancy guard (e.g. a REENTRANCY_GUARD storage flag)"
+        },
+        {
+          "severity": "critical",
+          "rule_id": "R-01",
+          "message": "Function 'transfer' writes to storage after an external call — reentrancy risk",
+          "location": "VulnerableVault:34:12",
+          "suggestion": "Move state updates before the external call, or use a reentrancy guard"
+        },
+        {
+          "severity": "low",
+          "rule_id": "R-03",
+          "message": "Function 'transfer' makes external calls but no reentrancy guard was found on the contract",
+          "location": "VulnerableVault:34:12",
+          "suggestion": "Consider adding a reentrancy guard (e.g. a REENTRANCY_GUARD storage flag)"
+        },
+        {
+          "severity": "high",
+          "rule_id": "R-04",
+          "message": "Function 'withdraw' makes an external call and shares storage key 'a' with another externally-calling function — cross-function reentrancy risk",
+          "location": "VulnerableVault:28:12",
+          "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+        },
+        {
+          "severity": "high",
+          "rule_id": "R-04",
+          "message": "Function 'transfer' makes an external call and shares storage key 'a' with another externally-calling function — cross-function reentrancy risk",
+          "location": "VulnerableVault:34:12",
+          "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+        },
+        {
+          "severity": "high",
+          "rule_id": "O-01",
+          "message": "Function 'deposit' performs unchecked 'balance + amount' on a financial type — possible overflow/underflow",
+          "location": "VulnerableVault:20:72",
+          "suggestion": "Use balance.checked_add(amount) instead of the bare operator"
+        },
+        {
+          "severity": "high",
+          "rule_id": "O-01",
+          "message": "Function 'withdraw' performs unchecked 'balance - amount' on a financial type — possible overflow/underflow",
+          "location": "VulnerableVault:27:72",
+          "suggestion": "Use balance.checked_sub(amount) instead of the bare operator"
+        },
+        {
+          "severity": "high",
+          "rule_id": "O-01",
+          "message": "Function 'transfer' performs unchecked 'balance - amount' on a financial type — possible overflow/underflow",
+          "location": "VulnerableVault:35:72",
+          "suggestion": "Use balance.checked_sub(amount) instead of the bare operator"
+        },
+        {
+          "severity": "high",
+          "rule_id": "A-01",
+          "message": "Function 'withdraw' modifies state without authorization check",
+          "location": "VulnerableVault:27:33",
+          "suggestion": "Add require_auth() with the appropriate Address at the start of this function"
+        },
+        {
+          "severity": "medium",
+          "rule_id": "A-04",
+          "message": "Function 'withdraw' takes Address parameter 'to' but doesn't authenticate it",
+          "location": "VulnerableVault",
+          "suggestion": "Use require_auth() with the Address parameter to ensure only that user can call"
+        },
+        {
+          "severity": "high",
+          "rule_id": "A-01",
+          "message": "Function 'transfer' modifies state without authorization check",
+          "location": "VulnerableVault:35:33",
+          "suggestion": "Add require_auth() with the appropriate Address at the start of this function"
+        },
+        {
+          "severity": "medium",
+          "rule_id": "A-04",
+          "message": "Function 'transfer' takes Address parameter 'from' but doesn't authenticate it",
+          "location": "VulnerableVault",
+          "suggestion": "Use require_auth() with the Address parameter to ensure only that user can call"
+        },
+        {
+          "severity": "critical",
+          "rule_id": "A-01",
+          "message": "Function 'set_admin' modifies state without authorization check",
+          "location": "VulnerableVault:40:33",
+          "suggestion": "Add require_auth() with the appropriate Address at the start of this function"
+        },
+        {
+          "severity": "high",
+          "rule_id": "A-02",
+          "message": "Admin function 'set_admin' is missing authorization check",
+          "location": "VulnerableVault:40:33",
+          "suggestion": "Add require_auth() with the admin Address at the start of this function"
+        },
+        {
+          "severity": "medium",
+          "rule_id": "A-04",
+          "message": "Function 'set_admin' takes Address parameter 'new_admin' but doesn't authenticate it",
+          "location": "VulnerableVault",
+          "suggestion": "Use require_auth() with the Address parameter to ensure only that user can call"
+        },
+        {
+          "severity": "critical",
+          "rule_id": "A-01",
+          "message": "Function 'configure' modifies state without authorization check",
+          "location": "VulnerableVault:45:33",
+          "suggestion": "Add require_auth() with the appropriate Address at the start of this function"
+        },
+        {
+          "severity": "high",
+          "rule_id": "A-02",
+          "message": "Admin function 'configure' is missing authorization check",
+          "location": "VulnerableVault:45:33",
+          "suggestion": "Add require_auth() with the admin Address at the start of this function"
+        },
+        {
+          "severity": "high",
+          "rule_id": "A-04",
+          "message": "Public function 'configure' has no authorization check and modifies state — anybody can call",
+          "location": "VulnerableVault",
+          "suggestion": "Add require_auth() with the appropriate Address if this function should be restricted"
+        },
+        {
+          "severity": "high",
+          "rule_id": "A-02",
+          "message": "Admin function 'upgrade' is missing authorization check",
+          "location": "VulnerableVault",
+          "suggestion": "Add require_auth() with the admin Address at the start of this function"
+        },
+        {
+          "severity": "high",
+          "rule_id": "A-01",
+          "message": "Function 'get_balance' modifies state without authorization check",
+          "location": "VulnerableVault:56:34",
+          "suggestion": "Add require_auth() with the appropriate Address at the start of this function"
+        },
+        {
+          "severity": "high",
+          "rule_id": "A-04",
+          "message": "Public function 'get_balance' has no authorization check and modifies state — anybody can call",
+          "location": "VulnerableVault",
+          "suggestion": "Add require_auth() with the appropriate Address if this function should be restricted"
+        },
+        {
+          "severity": "medium",
+          "rule_id": "S-01",
+          "message": "Short storage key 'a' may collide with other contracts",
+          "location": "VulnerableVault:12:33",
+          "suggestion": "Use descriptive namespaced keys like 'v1_contract_balance'"
+        },
+        {
+          "severity": "medium",
+          "rule_id": "S-01",
+          "message": "Short storage key 'c' may collide with other contracts",
+          "location": "VulnerableVault:45:33",
+          "suggestion": "Use descriptive namespaced keys like 'v1_contract_balance'"
+        },
+        {
+          "severity": "medium",
+          "rule_id": "S-01",
+          "message": "Short storage key 'b' may collide with other contracts",
+          "location": "VulnerableVault:13:33",
+          "suggestion": "Use descriptive namespaced keys like 'v1_contract_balance'"
+        },
+        {
+          "severity": "high",
+          "rule_id": "S-03",
+          "message": "Storage key 'a' written with different value types: '0i128' in '__constructor' and '(balance + amount)' in 'deposit'",
+          "location": "VulnerableVault:12:33",
+          "suggestion": "Use the same Rust type for all writes to this key, or rename one of the keys"
+        },
+        {
+          "severity": "high",
+          "rule_id": "S-03",
+          "message": "Storage key 'b' written with different value types: 'Address :: from_string (& Symbol :: new (& env , \"admin\"))' in '__constructor' and 'new_admin' in 'set_admin'",
+          "location": "VulnerableVault:13:33",
+          "suggestion": "Use the same Rust type for all writes to this key, or rename one of the keys"
+        },
+        {
+          "severity": "high",
+          "rule_id": "S-04",
+          "message": "Key 'a' accessed via both instance and temporary storage",
+          "location": "VulnerableVault:12:33",
+          "suggestion": "Choose one storage type for this key"
+        },
+        {
+          "severity": "info",
+          "rule_id": "S-05",
+          "message": "No version key found — upgrade could cause storage collisions",
+          "location": "VulnerableVault",
+          "suggestion": "Store a VERSION key and use it as prefix for all other keys"
+        }
+      ]
+    }
+  ],
+  "total_score": {
+    "overall": 0,
+    "grade": "F",
+    "breakdown": {
+      "critical": 3,
+      "high": 16,
+      "medium": 6,
+      "low": 2,
+      "info": 1
+    },
+    "top_issues": [
+      {
+        "severity": "critical",
+        "rule_id": "R-01",
+        "message": "Function 'transfer' writes to storage after an external call — reentrancy risk",
+        "location": "VulnerableVault:34:12",
+        "suggestion": "Move state updates before the external call, or use a reentrancy guard"
+      },
+      {
+        "severity": "high",
+        "rule_id": "R-04",
+        "message": "Function 'withdraw' makes an external call and shares storage key 'a' with another externally-calling function — cross-function reentrancy risk",
+        "location": "VulnerableVault:28:12",
+        "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+      },
+      {
+        "severity": "high",
+        "rule_id": "R-04",
+        "message": "Function 'transfer' makes an external call and shares storage key 'a' with another externally-calling function — cross-function reentrancy risk",
+        "location": "VulnerableVault:34:12",
+        "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+      },
+      {
+        "severity": "high",
+        "rule_id": "O-01",
+        "message": "Function 'deposit' performs unchecked 'balance + amount' on a financial type — possible overflow/underflow",
+        "location": "VulnerableVault:20:72",
+        "suggestion": "Use balance.checked_add(amount) instead of the bare operator"
+      },
+      {
+        "severity": "high",
+        "rule_id": "O-01",
+        "message": "Function 'withdraw' performs unchecked 'balance - amount' on a financial type — possible overflow/underflow",
+        "location": "VulnerableVault:27:72",
+        "suggestion": "Use balance.checked_sub(amount) instead of the bare operator"
+      }
+    ]
+  },
+  "all_findings": [
+    {
+      "severity": "low",
+      "rule_id": "R-03",
+      "message": "Function 'withdraw' makes external calls but no reentrancy guard was found on the contract",
+      "location": "VulnerableVault:28:12",
+      "suggestion": "Consider adding a reentrancy guard (e.g. a REENTRANCY_GUARD storage flag)"
+    },
+    {
+      "severity": "critical",
+      "rule_id": "R-01",
+      "message": "Function 'transfer' writes to storage after an external call — reentrancy risk",
+      "location": "VulnerableVault:34:12",
+      "suggestion": "Move state updates before the external call, or use a reentrancy guard"
+    },
+    {
+      "severity": "low",
+      "rule_id": "R-03",
+      "message": "Function 'transfer' makes external calls but no reentrancy guard was found on the contract",
+      "location": "VulnerableVault:34:12",
+      "suggestion": "Consider adding a reentrancy guard (e.g. a REENTRANCY_GUARD storage flag)"
+    },
+    {
+      "severity": "high",
+      "rule_id": "R-04",
+      "message": "Function 'withdraw' makes an external call and shares storage key 'a' with another externally-calling function — cross-function reentrancy risk",
+      "location": "VulnerableVault:28:12",
+      "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+    },
+    {
+      "severity": "high",
+      "rule_id": "R-04",
+      "message": "Function 'transfer' makes an external call and shares storage key 'a' with another externally-calling function — cross-function reentrancy risk",
+      "location": "VulnerableVault:34:12",
+      "suggestion": "Use a shared reentrancy guard across functions that touch this key"
+    },
+    {
+      "severity": "high",
+      "rule_id": "O-01",
+      "message": "Function 'deposit' performs unchecked 'balance + amount' on a financial type — possible overflow/underflow",
+      "location": "VulnerableVault:20:72",
+      "suggestion": "Use balance.checked_add(amount) instead of the bare operator"
+    },
+    {
+      "severity": "high",
+      "rule_id": "O-01",
+      "message": "Function 'withdraw' performs unchecked 'balance - amount' on a financial type — possible overflow/underflow",
+      "location": "VulnerableVault:27:72",
+      "suggestion": "Use balance.checked_sub(amount) instead of the bare operator"
+    },
+    {
+      "severity": "high",
+      "rule_id": "O-01",
+      "message": "Function 'transfer' performs unchecked 'balance - amount' on a financial type — possible overflow/underflow",
+      "location": "VulnerableVault:35:72",
+      "suggestion": "Use balance.checked_sub(amount) instead of the bare operator"
+    },
+    {
+      "severity": "high",
+      "rule_id": "A-01",
+      "message": "Function 'withdraw' modifies state without authorization check",
+      "location": "VulnerableVault:27:33",
+      "suggestion": "Add require_auth() with the appropriate Address at the start of this function"
+    },
+    {
+      "severity": "medium",
+      "rule_id": "A-04",
+      "message": "Function 'withdraw' takes Address parameter 'to' but doesn't authenticate it",
+      "location": "VulnerableVault",
+      "suggestion": "Use require_auth() with the Address parameter to ensure only that user can call"
+    },
+    {
+      "severity": "high",
+      "rule_id": "A-01",
+      "message": "Function 'transfer' modifies state without authorization check",
+      "location": "VulnerableVault:35:33",
+      "suggestion": "Add require_auth() with the appropriate Address at the start of this function"
+    },
+    {
+      "severity": "medium",
+      "rule_id": "A-04",
+      "message": "Function 'transfer' takes Address parameter 'from' but doesn't authenticate it",
+      "location": "VulnerableVault",
+      "suggestion": "Use require_auth() with the Address parameter to ensure only that user can call"
+    },
+    {
+      "severity": "critical",
+      "rule_id": "A-01",
+      "message": "Function 'set_admin' modifies state without authorization check",
+      "location": "VulnerableVault:40:33",
+      "suggestion": "Add require_auth() with the appropriate Address at the start of this function"
+    },
+    {
+      "severity": "high",
+      "rule_id": "A-02",
+      "message": "Admin function 'set_admin' is missing authorization check",
+      "location": "VulnerableVault:40:33",
+      "suggestion": "Add require_auth() with the admin Address at the start of this function"
+    },
+    {
+      "severity": "medium",
+      "rule_id": "A-04",
+      "message": "Function 'set_admin' takes Address parameter 'new_admin' but doesn't authenticate it",
+      "location": "VulnerableVault",
+      "suggestion": "Use require_auth() with the Address parameter to ensure only that user can call"
+    },
+    {
+      "severity": "critical",
+      "rule_id": "A-01",
+      "message": "Function 'configure' modifies state without authorization check",
+      "location": "VulnerableVault:45:33",
+      "suggestion": "Add require_auth() with the appropriate Address at the start of this function"
+    },
+    {
+      "severity": "high",
+      "rule_id": "A-02",
+      "message": "Admin function 'configure' is missing authorization check",
+      "location": "VulnerableVault:45:33",
+      "suggestion": "Add require_auth() with the admin Address at the start of this function"
+    },
+    {
+      "severity": "high",
+      "rule_id": "A-04",
+      "message": "Public function 'configure' has no authorization check and modifies state — anybody can call",
+      "location": "VulnerableVault",
+      "suggestion": "Add require_auth() with the appropriate Address if this function should be restricted"
+    },
+    {
+      "severity": "high",
+      "rule_id": "A-02",
+      "message": "Admin function 'upgrade' is missing authorization check",
+      "location": "VulnerableVault",
+      "suggestion": "Add require_auth() with the admin Address at the start of this function"
+    },
+    {
+      "severity": "high",
+      "rule_id": "A-01",
+      "message": "Function 'get_balance' modifies state without authorization check",
+      "location": "VulnerableVault:56:34",
+      "suggestion": "Add require_auth() with the appropriate Address at the start of this function"
+    },
+    {
+      "severity": "high",
+      "rule_id": "A-04",
+      "message": "Public function 'get_balance' has no authorization check and modifies state — anybody can call",
+      "location": "VulnerableVault",
+      "suggestion": "Add require_auth() with the appropriate Address if this function should be restricted"
+    },
+    {
+      "severity": "medium",
+      "rule_id": "S-01",
+      "message": "Short storage key 'a' may collide with other contracts",
+      "location": "VulnerableVault:12:33",
+      "suggestion": "Use descriptive namespaced keys like 'v1_contract_balance'"
+    },
+    {
+      "severity": "medium",
+      "rule_id": "S-01",
+      "message": "Short storage key 'c' may collide with other contracts",
+      "location": "VulnerableVault:45:33",
+      "suggestion": "Use descriptive namespaced keys like 'v1_contract_balance'"
+    },
+    {
+      "severity": "medium",
+      "rule_id": "S-01",
+      "message": "Short storage key 'b' may collide with other contracts",
+      "location": "VulnerableVault:13:33",
+      "suggestion": "Use descriptive namespaced keys like 'v1_contract_balance'"
+    },
+    {
+      "severity": "high",
+      "rule_id": "S-03",
+      "message": "Storage key 'a' written with different value types: '0i128' in '__constructor' and '(balance + amount)' in 'deposit'",
+      "location": "VulnerableVault:12:33",
+      "suggestion": "Use the same Rust type for all writes to this key, or rename one of the keys"
+    },
+    {
+      "severity": "high",
+      "rule_id": "S-03",
+      "message": "Storage key 'b' written with different value types: 'Address :: from_string (& Symbol :: new (& env , \"admin\"))' in '__constructor' and 'new_admin' in 'set_admin'",
+      "location": "VulnerableVault:13:33",
+      "suggestion": "Use the same Rust type for all writes to this key, or rename one of the keys"
+    },
+    {
+      "severity": "high",
+      "rule_id": "S-04",
+      "message": "Key 'a' accessed via both instance and temporary storage",
+      "location": "VulnerableVault:12:33",
+      "suggestion": "Choose one storage type for this key"
+    },
+    {
+      "severity": "info",
+      "rule_id": "S-05",
+      "message": "No version key found — upgrade could cause storage collisions",
+      "location": "VulnerableVault",
+      "suggestion": "Store a VERSION key and use it as prefix for all other keys"
+    }
+  ],
+  "summary": "Security Score: 0/100 (Grade F)\nCritical: 3 | High: 16 | Medium: 6 | Low: 2 | Info: 1\nTop issues: Function 'transfer' writes to storage after an external call — reentrancy risk, Function 'withdraw' makes an external call and shares storage key 'a' with another externally-calling function — cross-function reentrancy risk, Function 'transfer' makes an external call and shares storage key 'a' with another externally-calling function — cross-function reentrancy risk, Function 'deposit' performs unchecked 'balance + amount' on a financial type — possible overflow/underflow, Function 'withdraw' performs unchecked 'balance - amount' on a financial type — possible overflow/underflow"
+}
