@@ -1,4 +1,5 @@
 pub mod finding;
+pub mod output;
 pub mod severity;
 
 use chrono::{DateTime, Utc};

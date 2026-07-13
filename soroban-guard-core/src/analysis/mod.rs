@@ -3,14 +3,7 @@ pub mod overflow;
 pub mod reentrancy;
 pub mod storage;
 
-use std::path::Path;
-
-use walkdir::WalkDir;
-
-use crate::config::Config;
-use crate::error::Result;
 use crate::parser::ast::Contract;
-use crate::parser::ContractParser;
 use crate::report::finding::Finding;
 use crate::report::Report;
 use crate::scoring::calculate_score;
@@ -94,47 +87,4 @@ impl Default for AnalysisEngine {
     }
 }
 
-pub struct AnalysisRunner {
-    config: Config,
-}
 
-impl AnalysisRunner {
-    pub fn new(config: Config) -> Self {
-        AnalysisRunner { config }
-    }
-
-    pub fn run(&self) -> Result<Vec<Report>> {
-        let mut reports = Vec::new();
-
-        for path_str in &self.config.paths {
-            let path = Path::new(path_str);
-            if path.is_dir() {
-                self.analyze_dir(path, &mut reports)?;
-            } else if path.is_file() {
-                self.analyze_file(path, &mut reports)?;
-            }
-        }
-
-        Ok(reports)
-    }
-
-    fn analyze_file(&self, path: &Path, reports: &mut Vec<Report>) -> Result<()> {
-        let source = std::fs::read_to_string(path)?;
-        let parser = ContractParser::new();
-        if let Ok(contract) = parser.parse_source(&source) {
-            let engine = AnalysisEngine::with_default_rules();
-            let report = engine.analyze_contract(&contract, &path.to_string_lossy());
-            reports.push(report);
-        }
-        Ok(())
-    }
-
-    fn analyze_dir(&self, path: &Path, reports: &mut Vec<Report>) -> Result<()> {
-        for entry in WalkDir::new(path).into_iter().filter_map(|e| e.ok()) {
-            if entry.path().extension().map_or(false, |ext| ext == "rs") {
-                self.analyze_file(entry.path(), reports)?;
-            }
-        }
-        Ok(())
-    }
-}
