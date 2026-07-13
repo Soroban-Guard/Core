@@ -1,13 +1,114 @@
-use syn::Item;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone)]
-pub struct ContractAst {
-    pub items: Vec<Item>,
-    pub source: String,
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Contract {
+    pub name: String,
+    pub functions: Vec<ContractFn>,
+    pub storage_keys: Vec<StorageAccess>,
+    pub dependencies: Vec<String>,
 }
 
-impl ContractAst {
-    pub fn new(source: String, items: Vec<Item>) -> Self {
-        ContractAst { items, source }
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ContractFn {
+    pub name: String,
+    pub args: Vec<FnArg>,
+    pub return_type: String,
+    pub visibility: FnVisibility,
+    pub attributes: Vec<String>,
+    pub is_init: bool,
+    pub body_analysis: FnBodyAnalysis,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FnArg {
+    pub name: String,
+    pub type_name: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum FnVisibility {
+    Public,
+    Private,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FnBodyAnalysis {
+    pub cross_contract_calls: Vec<CrossContractCall>,
+    pub storage_writes: Vec<StorageAccess>,
+    pub storage_reads: Vec<StorageAccess>,
+    pub auth_checks: Vec<AuthCheck>,
+    pub has_loops: bool,
+    pub has_unsafe: bool,
+    pub calls_external: bool,
+}
+
+impl FnBodyAnalysis {
+    pub fn new() -> Self {
+        FnBodyAnalysis {
+            cross_contract_calls: Vec::new(),
+            storage_writes: Vec::new(),
+            storage_reads: Vec::new(),
+            auth_checks: Vec::new(),
+            has_loops: false,
+            has_unsafe: false,
+            calls_external: false,
+        }
     }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CrossContractCall {
+    pub target: String,
+    pub function: String,
+    pub args_count: usize,
+    pub position: SourcePos,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SourcePos {
+    pub line: usize,
+    pub column: usize,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum StorageKeyType {
+    Symbol,
+    Bytes,
+    String,
+    Other(String),
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum StorageAccessType {
+    Read,
+    Write,
+    Delete,
+    Check,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum StorageType {
+    Instance,
+    Temporary,
+    Persistent,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StorageAccess {
+    pub key: String,
+    pub key_type: StorageKeyType,
+    pub access_type: StorageAccessType,
+    pub storage_type: StorageType,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AuthCheck {
+    pub kind: AuthKind,
+    pub target: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum AuthKind {
+    RequireAuth,
+    RequireAuthForArgs,
 }

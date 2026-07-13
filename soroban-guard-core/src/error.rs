@@ -8,6 +8,12 @@ pub enum SorobanGuardError {
     #[error("Parse error: {0}")]
     Parse(String),
 
+    #[error("File not found: {0}")]
+    FileNotFound(String),
+
+    #[error("No Soroban contracts found: {0}")]
+    NoContractsFound(String),
+
     #[error("Configuration error: {0}")]
     Config(String),
 
