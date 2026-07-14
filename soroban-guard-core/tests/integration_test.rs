@@ -71,7 +71,9 @@ fn test_vault_vulnerable_has_all_rule_categories() {
     assert_eq!(score.overall, 0, "Vulnerable vault should score 0");
     let rule_ids: std::collections::BTreeSet<&str> =
         findings.iter().map(|f| f.rule_id.as_str()).collect();
-    for cat in &["A-01", "A-02", "O-01", "R-01", "R-03", "R-04", "S-01", "S-03", "S-04", "S-05"] {
+    for cat in &[
+        "A-01", "A-02", "O-01", "R-01", "R-03", "R-04", "S-01", "S-03", "S-04", "S-05",
+    ] {
         assert!(
             rule_ids.contains(cat),
             "Vulnerable vault should trigger rule {}",
@@ -85,11 +87,26 @@ fn test_nft_marketplace_has_access_control_issues() {
     let (findings, _) = analyze_fixture("nft_marketplace.rs");
     let rule_ids: std::collections::BTreeSet<&str> =
         findings.iter().map(|f| f.rule_id.as_str()).collect();
-    assert!(rule_ids.contains("A-01"), "NFT marketplace should have A-01");
-    assert!(rule_ids.contains("A-02"), "NFT marketplace should have A-02 (set_fee matches admin pattern)");
-    assert!(rule_ids.contains("A-04"), "NFT marketplace should have A-04");
-    assert!(rule_ids.contains("R-03"), "NFT marketplace should have R-03 (no reentrancy guard)");
-    assert!(rule_ids.contains("S-02"), "NFT marketplace should have S-02 (generic key 'admin')");
+    assert!(
+        rule_ids.contains("A-01"),
+        "NFT marketplace should have A-01"
+    );
+    assert!(
+        rule_ids.contains("A-02"),
+        "NFT marketplace should have A-02 (set_fee matches admin pattern)"
+    );
+    assert!(
+        rule_ids.contains("A-04"),
+        "NFT marketplace should have A-04"
+    );
+    assert!(
+        rule_ids.contains("R-03"),
+        "NFT marketplace should have R-03 (no reentrancy guard)"
+    );
+    assert!(
+        rule_ids.contains("S-02"),
+        "NFT marketplace should have S-02 (generic key 'admin')"
+    );
 }
 
 #[test]
@@ -97,10 +114,19 @@ fn test_lending_pool_has_reentrancy() {
     let (findings, _) = analyze_fixture("lending_pool.rs");
     let rule_ids: std::collections::BTreeSet<&str> =
         findings.iter().map(|f| f.rule_id.as_str()).collect();
-    assert!(rule_ids.contains("R-01"), "Lending pool should have R-01 (state write after external call in liquidate)");
+    assert!(
+        rule_ids.contains("R-01"),
+        "Lending pool should have R-01 (state write after external call in liquidate)"
+    );
     assert!(rule_ids.contains("R-03"), "Lending pool should have R-03");
-    assert!(rule_ids.contains("O-01"), "Lending pool should have O-01 (unchecked arithmetic in borrow)");
-    assert!(rule_ids.contains("A-04"), "Lending pool should have A-04 (public liquidate without auth)");
+    assert!(
+        rule_ids.contains("O-01"),
+        "Lending pool should have O-01 (unchecked arithmetic in borrow)"
+    );
+    assert!(
+        rule_ids.contains("A-04"),
+        "Lending pool should have A-04 (public liquidate without auth)"
+    );
 }
 
 #[test]
@@ -109,7 +135,10 @@ fn test_amm_pair_has_overflow_and_reentrancy() {
     let rule_ids: std::collections::BTreeSet<&str> =
         findings.iter().map(|f| f.rule_id.as_str()).collect();
     assert!(rule_ids.contains("O-01"), "AMM should have O-01");
-    assert!(rule_ids.contains("O-03"), "AMM should have O-03 (division in swap)");
+    assert!(
+        rule_ids.contains("O-03"),
+        "AMM should have O-03 (division in swap)"
+    );
     assert!(rule_ids.contains("R-01"), "AMM should have R-01");
     assert!(rule_ids.contains("R-03"), "AMM should have R-03");
 }
@@ -117,10 +146,20 @@ fn test_amm_pair_has_overflow_and_reentrancy() {
 #[test]
 fn test_minimal_contract() {
     let (findings, score) = analyze_fixture("minimal.rs");
-    assert_eq!(score.overall, 100, "Minimal contract should score 100, got {}", score.overall);
+    assert_eq!(
+        score.overall, 100,
+        "Minimal contract should score 100, got {}",
+        score.overall
+    );
     let rule_ids: Vec<_> = findings.iter().map(|f| f.rule_id.as_str()).collect();
-    assert!(rule_ids.contains(&"A-04"), "Minimal contract should have A-04 (public greet without auth)");
-    assert!(rule_ids.contains(&"S-05"), "Minimal contract should have S-05 (no version key)");
+    assert!(
+        rule_ids.contains(&"A-04"),
+        "Minimal contract should have A-04 (public greet without auth)"
+    );
+    assert!(
+        rule_ids.contains(&"S-05"),
+        "Minimal contract should have S-05 (no version key)"
+    );
 }
 
 #[test]
@@ -204,14 +243,29 @@ fn test_minimal_matches_expected_json() {
 #[test]
 fn test_all_fixtures_parse_successfully() {
     let parser = ContractParser::new();
-    for name in &["vault_safe.rs", "vault_vulnerable.rs", "nft_marketplace.rs", "lending_pool.rs", "amm_pair.rs", "minimal.rs"] {
+    for name in &[
+        "vault_safe.rs",
+        "vault_vulnerable.rs",
+        "nft_marketplace.rs",
+        "lending_pool.rs",
+        "amm_pair.rs",
+        "minimal.rs",
+    ] {
         let path = fixture(name);
         let source = std::fs::read_to_string(&path).unwrap();
         let contract = parser.parse_source(&source).unwrap_or_else(|e| {
             panic!("Failed to parse {}: {:?}", name, e);
         });
-        assert!(!contract.name.is_empty(), "Contract name should not be empty for {}", name);
-        assert!(!contract.name.starts_with("Unknown"), "Contract should be recognized, got 'Unknown' for {}", name);
+        assert!(
+            !contract.name.is_empty(),
+            "Contract name should not be empty for {}",
+            name
+        );
+        assert!(
+            !contract.name.starts_with("Unknown"),
+            "Contract should be recognized, got 'Unknown' for {}",
+            name
+        );
     }
 }
 
@@ -219,7 +273,14 @@ fn test_all_fixtures_parse_successfully() {
 fn test_all_fixtures_produce_consistent_results() {
     let parser = ContractParser::new();
     let engine = AnalysisEngine::with_default_rules();
-    for name in &["vault_safe.rs", "vault_vulnerable.rs", "nft_marketplace.rs", "lending_pool.rs", "amm_pair.rs", "minimal.rs"] {
+    for name in &[
+        "vault_safe.rs",
+        "vault_vulnerable.rs",
+        "nft_marketplace.rs",
+        "lending_pool.rs",
+        "amm_pair.rs",
+        "minimal.rs",
+    ] {
         let path = fixture(name);
         let source = std::fs::read_to_string(&path).unwrap();
         let contract = parser.parse_source(&source).unwrap();
@@ -232,8 +293,16 @@ fn test_all_fixtures_produce_consistent_results() {
             name
         );
         for (a, b) in report1.findings.iter().zip(report2.findings.iter()) {
-            assert_eq!(a.rule_id, b.rule_id, "Rule IDs should match on re-analysis of {}", name);
-            assert_eq!(a.severity, b.severity, "Severities should match on re-analysis of {}", name);
+            assert_eq!(
+                a.rule_id, b.rule_id,
+                "Rule IDs should match on re-analysis of {}",
+                name
+            );
+            assert_eq!(
+                a.severity, b.severity,
+                "Severities should match on re-analysis of {}",
+                name
+            );
         }
     }
 }

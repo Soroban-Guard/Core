@@ -33,7 +33,10 @@ fn rule<'a>(findings: &'a [Finding], rule_id: &str) -> &'a Finding {
 #[test]
 fn test_short_key_s01() {
     let findings = findings_for("tests/fixtures/storage_bad.rs");
-    assert!(has_rule(&findings, "S-01"), "expected S-01, got: {findings:?}");
+    assert!(
+        has_rule(&findings, "S-01"),
+        "expected S-01, got: {findings:?}"
+    );
     let s01 = rule(&findings, "S-01");
     assert_eq!(s01.severity, Severity::Medium);
     assert!(s01.message.contains("'a'"));
@@ -44,7 +47,10 @@ fn test_short_key_s01() {
 #[test]
 fn test_generic_key_s02() {
     let findings = findings_for("tests/fixtures/storage_bad.rs");
-    assert!(has_rule(&findings, "S-02"), "expected S-02, got: {findings:?}");
+    assert!(
+        has_rule(&findings, "S-02"),
+        "expected S-02, got: {findings:?}"
+    );
     let s02_all: Vec<&Finding> = findings.iter().filter(|f| f.rule_id == "S-02").collect();
     for f in &s02_all {
         assert_eq!(f.severity, Severity::Low);
@@ -85,7 +91,10 @@ fn test_instance_temporary_confusion_s04() {
 fn test_missing_version_s05() {
     let findings = findings_for("tests/fixtures/storage_bad.rs");
 
-    assert!(has_rule(&findings, "S-05"), "expected S-05, got: {findings:?}");
+    assert!(
+        has_rule(&findings, "S-05"),
+        "expected S-05, got: {findings:?}"
+    );
     assert_eq!(rule(&findings, "S-05").severity, Severity::Info);
 }
 
@@ -256,8 +265,14 @@ fn test_engine_registers_storage() {
         .parse_file("tests/fixtures/storage_bad.rs")
         .expect("parse");
     let findings = engine.run(&contract);
-    assert!(has_rule(&findings, "S-01"), "engine should surface S-01, got: {findings:?}");
-    assert!(has_rule(&findings, "S-05"), "engine should surface S-05, got: {findings:?}");
+    assert!(
+        has_rule(&findings, "S-01"),
+        "engine should surface S-01, got: {findings:?}"
+    );
+    assert!(
+        has_rule(&findings, "S-05"),
+        "engine should surface S-05, got: {findings:?}"
+    );
 }
 
 // 15. Detector metadata

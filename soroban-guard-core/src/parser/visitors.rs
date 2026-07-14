@@ -13,7 +13,13 @@ fn type_to_string(ty: &syn::Type) -> String {
 
 fn expr_to_string(expr: &syn::Expr) -> String {
     match expr {
-        syn::Expr::Path(p) => p.path.segments.iter().map(|s| s.ident.to_string()).collect::<Vec<_>>().join("::"),
+        syn::Expr::Path(p) => p
+            .path
+            .segments
+            .iter()
+            .map(|s| s.ident.to_string())
+            .collect::<Vec<_>>()
+            .join("::"),
         syn::Expr::Lit(l) => quote::quote!(#l).to_string(),
         other => quote::quote!(#other).to_string(),
     }
@@ -34,7 +40,11 @@ fn extract_method_chain(expr: &syn::Expr) -> Vec<String> {
             .collect(),
         _ => {
             let s = expr_to_string(expr);
-            if s.is_empty() { vec![] } else { vec![s] }
+            if s.is_empty() {
+                vec![]
+            } else {
+                vec![s]
+            }
         }
     }
 }
@@ -74,7 +84,14 @@ fn extract_visibility(vis: &syn::Visibility) -> FnVisibility {
 fn extract_attr_names(attrs: &[syn::Attribute]) -> Vec<String> {
     attrs
         .iter()
-        .map(|a| a.path().segments.iter().map(|s| s.ident.to_string()).collect::<Vec<_>>().join("::"))
+        .map(|a| {
+            a.path()
+                .segments
+                .iter()
+                .map(|s| s.ident.to_string())
+                .collect::<Vec<_>>()
+                .join("::")
+        })
         .filter(|n| n != "contractimpl" && n != "contract")
         .collect()
 }
@@ -119,14 +136,13 @@ fn count_call_args(expr: &syn::Expr) -> usize {
     match patterns::unwrap_expr(expr) {
         syn::Expr::Tuple(t) => t.elems.len(),
         syn::Expr::Array(a) => a.elems.len(),
-        syn::Expr::Macro(m) if m.mac.path.is_ident("vec") => {
-            m.mac
-                .parse_body_with(
-                    syn::punctuated::Punctuated::<syn::Expr, syn::Token![,]>::parse_terminated,
-                )
-                .map(|args| args.len())
-                .unwrap_or(1)
-        }
+        syn::Expr::Macro(m) if m.mac.path.is_ident("vec") => m
+            .mac
+            .parse_body_with(
+                syn::punctuated::Punctuated::<syn::Expr, syn::Token![,]>::parse_terminated,
+            )
+            .map(|args| args.len())
+            .unwrap_or(1),
         _ => 1,
     }
 }
@@ -280,6 +296,12 @@ pub struct ContractVisitor {
     loop_stack: Vec<bool>,
 }
 
+impl Default for ContractVisitor {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ContractVisitor {
     pub fn new() -> Self {
         ContractVisitor {
@@ -341,7 +363,12 @@ impl<'ast> Visit<'ast> for ContractVisitor {
 
         if self.in_contractimpl && self.contract_name.is_empty() {
             if let Some((_, path, _)) = &i.trait_ {
-                self.contract_name = path.segments.iter().map(|s| s.ident.to_string()).collect::<Vec<_>>().join("::");
+                self.contract_name = path
+                    .segments
+                    .iter()
+                    .map(|s| s.ident.to_string())
+                    .collect::<Vec<_>>()
+                    .join("::");
             } else {
                 self.contract_name = type_to_string(&i.self_ty)
                     .trim_start_matches("impl ")
@@ -427,7 +454,11 @@ impl<'ast> Visit<'ast> for ContractVisitor {
 
         if let (Some(fn_idx), Some(op)) = (self.current_fn_idx, arith_op_of(&expr.op)) {
             let financial = self.financial_touch(&expr.left) || self.financial_touch(&expr.right);
-            let return_type = if financial { "i128".to_string() } else { "unknown".to_string() };
+            let return_type = if financial {
+                "i128".to_string()
+            } else {
+                "unknown".to_string()
+            };
             let span = syn::spanned::Spanned::span(&expr.op).start();
             let in_loop = !self.loop_stack.is_empty();
             let dynamic_loop = self.loop_stack.last().copied().unwrap_or(false);
@@ -527,8 +558,13 @@ impl<'ast> Visit<'ast> for ContractVisitor {
                             let (key_desc, key_type) = expr
                                 .args
                                 .first()
-                                .map(|a| extract_key_from_expr(a))
-                                .unwrap_or_else(|| ("unknown".to_string(), StorageKeyType::Other("unknown".to_string())));
+                                .map(extract_key_from_expr)
+                                .unwrap_or_else(|| {
+                                    (
+                                        "unknown".to_string(),
+                                        StorageKeyType::Other("unknown".to_string()),
+                                    )
+                                });
 
                             let value_type = if access_type == StorageAccessType::Write {
                                 expr.args.get(1).map(|a| {
@@ -575,25 +611,20 @@ impl<'ast> Visit<'ast> for ContractVisitor {
                 };
                 let mut args_iter = expr.args.iter();
 
-
-
                 let target = args_iter
                     .next()
-                    .map(|a| extract_target_from_expr(a))
+                    .map(extract_target_from_expr)
                     .unwrap_or_default();
 
                 let function = args_iter
                     .next()
-                    .map(|a| extract_invoked_fn_name(a))
+                    .map(extract_invoked_fn_name)
                     .unwrap_or_default();
 
                 // The remaining argument (if any) is the container holding the
                 // invoked function's arguments — typically a tuple `(&a, &b)`
                 // or a `vec![&env, ...]`. Count its elements.
-                let args_count = args_iter
-                    .next()
-                    .map(count_call_args)
-                    .unwrap_or(0);
+                let args_count = args_iter.next().map(count_call_args).unwrap_or(0);
 
                 analysis.cross_contract_calls.push(CrossContractCall {
                     target,
@@ -625,11 +656,13 @@ impl<'ast> Visit<'ast> for ContractVisitor {
             }
 
             // Check for require_auth method calls: addr.require_auth() or env.require_auth(&addr)
-            if patterns::method_is_require_auth(&method_name) && method_name != "require_auth_for_args" {
+            if patterns::method_is_require_auth(&method_name)
+                && method_name != "require_auth_for_args"
+            {
                 let target = if chain.len() >= 2 && chain[0] == "env" {
                     expr.args
                         .first()
-                        .map(|a| extract_target_from_expr(a))
+                        .map(extract_target_from_expr)
                         .unwrap_or_default()
                 } else {
                     chain.first().cloned().unwrap_or_default()
@@ -646,7 +679,7 @@ impl<'ast> Visit<'ast> for ContractVisitor {
                 let target = if chain.len() >= 2 && chain[0] == "env" {
                     expr.args
                         .first()
-                        .map(|a| extract_target_from_expr(a))
+                        .map(extract_target_from_expr)
                         .unwrap_or_default()
                 } else {
                     chain.first().cloned().unwrap_or_default()
@@ -681,7 +714,7 @@ impl<'ast> Visit<'ast> for ContractVisitor {
                     let target = expr
                         .args
                         .first()
-                        .map(|a| extract_target_from_expr(a))
+                        .map(extract_target_from_expr)
                         .unwrap_or_default();
                     analysis.auth_checks.push(AuthCheck {
                         kind: AuthKind::RequireAuth,
@@ -694,7 +727,7 @@ impl<'ast> Visit<'ast> for ContractVisitor {
                     let target = expr
                         .args
                         .first()
-                        .map(|a| extract_target_from_expr(a))
+                        .map(extract_target_from_expr)
                         .unwrap_or_default();
                     analysis.auth_checks.push(AuthCheck {
                         kind: AuthKind::RequireAuthForArgs,

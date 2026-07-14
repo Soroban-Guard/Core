@@ -2,7 +2,9 @@ use crate::parser::ast::{ArithOp, StorageAccessType, StorageType};
 use syn::{Attribute, Expr, Path};
 
 pub fn has_contractimpl_attr(attrs: &[Attribute]) -> bool {
-    attrs.iter().any(|attr| attr.path().is_ident("contractimpl"))
+    attrs
+        .iter()
+        .any(|attr| attr.path().is_ident("contractimpl"))
 }
 
 pub fn has_contract_attr(attrs: &[Attribute]) -> Option<String> {
@@ -65,10 +67,9 @@ pub fn classify_arith_method(name: &str) -> Option<(ArithOp, ArithMethodKind)> {
         (rest, ArithMethodKind::Saturating)
     } else if let Some(rest) = name.strip_prefix("wrapping_") {
         (rest, ArithMethodKind::Wrapping)
-    } else if let Some(rest) = name.strip_prefix("overflowing_") {
-        (rest, ArithMethodKind::Overflowing)
     } else {
-        return None;
+        let rest = name.strip_prefix("overflowing_")?;
+        (rest, ArithMethodKind::Overflowing)
     };
 
     let op = match prefix {
@@ -194,11 +195,9 @@ pub fn extract_symbol_name(expr: &Expr) -> Option<String> {
                 }
             }
             if m.mac.path.is_ident("symbol") {
-                if let Ok(body) = m.mac.parse_body::<syn::Expr>() {
-                    if let syn::Expr::Lit(lit) = &body {
-                        if let syn::Lit::Str(s) = &lit.lit {
-                            return Some(s.value());
-                        }
+                if let Ok(syn::Expr::Lit(lit)) = m.mac.parse_body::<syn::Expr>() {
+                    if let syn::Lit::Str(s) = &lit.lit {
+                        return Some(s.value());
                     }
                 }
             }

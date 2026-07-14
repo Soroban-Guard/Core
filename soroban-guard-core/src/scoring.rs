@@ -70,11 +70,26 @@ pub fn calculate_score(findings: &[Finding]) -> SecurityScore {
         overall,
         grade,
         breakdown: SeverityBreakdown {
-            critical: findings.iter().filter(|f| f.severity == Severity::Critical).count() as u32,
-            high: findings.iter().filter(|f| f.severity == Severity::High).count() as u32,
-            medium: findings.iter().filter(|f| f.severity == Severity::Medium).count() as u32,
-            low: findings.iter().filter(|f| f.severity == Severity::Low).count() as u32,
-            info: findings.iter().filter(|f| f.severity == Severity::Info).count() as u32,
+            critical: findings
+                .iter()
+                .filter(|f| f.severity == Severity::Critical)
+                .count() as u32,
+            high: findings
+                .iter()
+                .filter(|f| f.severity == Severity::High)
+                .count() as u32,
+            medium: findings
+                .iter()
+                .filter(|f| f.severity == Severity::Medium)
+                .count() as u32,
+            low: findings
+                .iter()
+                .filter(|f| f.severity == Severity::Low)
+                .count() as u32,
+            info: findings
+                .iter()
+                .filter(|f| f.severity == Severity::Info)
+                .count() as u32,
         },
         top_issues: findings
             .iter()

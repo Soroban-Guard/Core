@@ -5,8 +5,15 @@ use crate::report::finding::Finding;
 use crate::report::severity::Severity;
 
 const ADMIN_FN_NAMES: &[&str] = &[
-    "admin", "owner", "manager", "set_", "update_", "configure",
-    "upgrade", "pause", "emergency",
+    "admin",
+    "owner",
+    "manager",
+    "set_",
+    "update_",
+    "configure",
+    "upgrade",
+    "pause",
+    "emergency",
 ];
 
 pub struct AccessControlDetector;
@@ -145,11 +152,7 @@ impl AccessControlDetector {
 
         // Has Address params but no auth and writes storage
         if has_address && !has_auth && has_storage_write {
-            let addr_param = func
-                .args
-                .iter()
-                .find(|a| a.type_name == "Address")
-                .unwrap();
+            let addr_param = func.args.iter().find(|a| a.type_name == "Address").unwrap();
             out.push(Finding::new(
                 Severity::Medium,
                 "A-04",

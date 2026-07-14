@@ -71,12 +71,13 @@ fn multiple_functions_same_key_different_categories() {
 
 #[test]
 fn zero_length_storage_key() {
-    let code = wrap_code(
-        r#"env.storage().instance().set(&Symbol::new(&env, ""), &1i128);"#,
-    );
+    let code = wrap_code(r#"env.storage().instance().set(&Symbol::new(&env, ""), &1i128);"#);
     let parser = ContractParser::new();
     let contract = parser.parse_source(&code).unwrap();
-    assert!(!contract.functions.is_empty(), "Should parse even with empty key");
+    assert!(
+        !contract.functions.is_empty(),
+        "Should parse even with empty key"
+    );
 }
 
 #[test]
@@ -128,7 +129,10 @@ fn contract_with_complex_expressions() {
         "#,
     );
     let (findings, _) = analyze_code(&code, "complex.rs");
-    let overflow_rules: Vec<_> = findings.iter().filter(|f| f.rule_id.starts_with("O-")).collect();
+    let overflow_rules: Vec<_> = findings
+        .iter()
+        .filter(|f| f.rule_id.starts_with("O-"))
+        .collect();
     assert!(
         overflow_rules.len() >= 2,
         "Complex arithmetic should trigger multiple overflow rules, got: {:?}",
@@ -174,7 +178,10 @@ fn multiple_require_auth_calls() {
         }
     "#;
     let (findings, _) = analyze_code(code, "multi_auth.rs");
-    let auth_issues: Vec<_> = findings.iter().filter(|f| f.rule_id.starts_with("A-")).collect();
+    let auth_issues: Vec<_> = findings
+        .iter()
+        .filter(|f| f.rule_id.starts_with("A-"))
+        .collect();
     assert!(
         auth_issues.is_empty(),
         "Multiple require_auth calls should suppress all A-01 findings, got: {:?}",
@@ -223,35 +230,41 @@ fn perfect_score_contract() {
     let has_s05_version = !has_s05;
     let expected_bonus = if has_r03_guard { 5 } else { 0 } + if has_s05_version { 3 } else { 0 };
     let expected_score = 100u8.saturating_sub(
-        findings.iter().map(|f| match f.severity {
-            soroban_guard_core::Severity::Critical => 30,
-            soroban_guard_core::Severity::High => 15,
-            soroban_guard_core::Severity::Medium => 7,
-            soroban_guard_core::Severity::Low => 3,
-            soroban_guard_core::Severity::Info => 1,
-        }).sum::<u8>().saturating_sub(expected_bonus)
+        findings
+            .iter()
+            .map(|f| match f.severity {
+                soroban_guard_core::Severity::Critical => 30,
+                soroban_guard_core::Severity::High => 15,
+                soroban_guard_core::Severity::Medium => 7,
+                soroban_guard_core::Severity::Low => 3,
+                soroban_guard_core::Severity::Info => 1,
+            })
+            .sum::<u8>()
+            .saturating_sub(expected_bonus),
     );
-    assert_eq!(score.overall, expected_score, "Score should match calculation");
+    assert_eq!(
+        score.overall, expected_score,
+        "Score should match calculation"
+    );
 }
 
 #[test]
 fn contract_with_unicode_in_comments() {
-    let code = format!(
-        r#"#![no_std]
+    let code = r#"#![no_std]
 // 你好, 世界 — Unicode comments should not break parsing
-use soroban_sdk::{{contract, contractimpl, Address, Env, Symbol}};
+use soroban_sdk::{contract, contractimpl, Address, Env, Symbol};
 #[contract]
 pub struct Unicode;
 #[contractimpl]
-impl Unicode {{
+impl Unicode {
     /// 🔒 This function requires auth
-    pub fn set(env: Env, admin: Address, val: i128) {{
+    pub fn set(env: Env, admin: Address, val: i128) {
         admin.require_auth();
         env.storage().instance().set(&Symbol::new(&env, "data"), &val);
-    }}
-}}
-"#,
-    );
+    }
+}
+"#
+    .to_string();
     let parser = ContractParser::new();
     let result = parser.parse_source(&code);
     assert!(result.is_ok(), "Unicode comments should parse correctly");

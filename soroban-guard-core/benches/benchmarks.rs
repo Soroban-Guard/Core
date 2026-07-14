@@ -49,7 +49,7 @@ fn bench_parse_large_contract(c: &mut Criterion) {
             i, i, i
         ));
     }
-    code.push_str("}");
+    code.push('}');
 
     c.bench_function("parse_large_contract_100_fns", |b| {
         b.iter(|| {

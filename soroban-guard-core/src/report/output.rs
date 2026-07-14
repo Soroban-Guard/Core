@@ -118,7 +118,9 @@ pub fn format_human(consolidated: &ConsolidatedReport) -> String {
     out
 }
 
-pub fn format_json(consolidated: &ConsolidatedReport) -> Result<String, crate::error::SorobanGuardError> {
+pub fn format_json(
+    consolidated: &ConsolidatedReport,
+) -> Result<String, crate::error::SorobanGuardError> {
     serde_json::to_string_pretty(consolidated)
         .map_err(|e| crate::error::SorobanGuardError::Report(e.to_string()))
 }
@@ -132,7 +134,9 @@ fn sarif_severity(severity: &Severity) -> &'static str {
     }
 }
 
-pub fn format_sarif(consolidated: &ConsolidatedReport) -> Result<String, crate::error::SorobanGuardError> {
+pub fn format_sarif(
+    consolidated: &ConsolidatedReport,
+) -> Result<String, crate::error::SorobanGuardError> {
     let mut rules: Vec<SarifRule> = Vec::new();
     let mut results: Vec<SarifResult> = Vec::new();
 
@@ -329,7 +333,7 @@ pub fn discover_contracts(
                 .filter_entry(|e| !is_hidden(e))
                 .filter_map(|e| e.ok())
             {
-                if entry.path().extension().map_or(false, |e| e == "rs") {
+                if entry.path().extension().is_some_and(|e| e == "rs") {
                     let is_excluded = exclude_patterns
                         .iter()
                         .any(|pat| pat.matches_path(entry.path()));

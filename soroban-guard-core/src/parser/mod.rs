@@ -19,8 +19,7 @@ impl ContractParser {
     }
 
     pub fn parse_source(&self, source: &str) -> Result<Contract> {
-        visitors::parse_contract(source)
-            .map_err(|e| SorobanGuardError::Parse(e))
+        visitors::parse_contract(source).map_err(SorobanGuardError::Parse)
     }
 }
 
@@ -79,7 +78,9 @@ mod tests {
     #[test]
     fn test_parse_soroban_contract() {
         let parser = ContractParser::new();
-        let contract = parser.parse_source(sample_soroban_contract()).expect("Failed to parse contract");
+        let contract = parser
+            .parse_source(sample_soroban_contract())
+            .expect("Failed to parse contract");
 
         assert_eq!(contract.name, "Vault");
         assert_eq!(contract.functions.len(), 5);
@@ -111,21 +112,25 @@ mod tests {
     #[test]
     fn test_storage_operations_detected() {
         let parser = ContractParser::new();
-        let contract = parser.parse_source(sample_soroban_contract()).expect("Failed to parse");
+        let contract = parser
+            .parse_source(sample_soroban_contract())
+            .expect("Failed to parse");
 
         let deposit = &contract.functions[1];
-        assert!(deposit.body_analysis.storage_reads.len() >= 1);
-        assert!(deposit.body_analysis.storage_writes.len() >= 1);
+        assert!(!deposit.body_analysis.storage_reads.is_empty());
+        assert!(!deposit.body_analysis.storage_writes.is_empty());
 
         let check_balance = &contract.functions[4];
-        assert!(check_balance.body_analysis.storage_reads.len() >= 1);
+        assert!(!check_balance.body_analysis.storage_reads.is_empty());
         assert_eq!(check_balance.body_analysis.storage_writes.len(), 0);
     }
 
     #[test]
     fn test_auth_checks_detected() {
         let parser = ContractParser::new();
-        let contract = parser.parse_source(sample_soroban_contract()).expect("Failed to parse");
+        let contract = parser
+            .parse_source(sample_soroban_contract())
+            .expect("Failed to parse");
 
         let deposit = &contract.functions[1];
         assert_eq!(deposit.body_analysis.auth_checks.len(), 1);

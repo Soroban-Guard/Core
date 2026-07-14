@@ -35,7 +35,10 @@ fn test_missing_auth_on_state_write() {
     let findings = findings_for("tests/fixtures/access_control_bad.rs");
 
     // withdraw_all has storage write but no auth — A-01
-    assert!(has_rule(&findings, "A-01"), "expected A-01, got: {findings:?}");
+    assert!(
+        has_rule(&findings, "A-01"),
+        "expected A-01, got: {findings:?}"
+    );
     let a01 = rule(&findings, "A-01");
     assert!(
         a01.severity == Severity::High || a01.severity == Severity::Critical,
@@ -104,7 +107,10 @@ fn test_address_param_without_auth() {
     let findings = findings_for_source(source);
 
     // Both A-01 (no auth on state write) and A-04 (Address param not authenticated) expected
-    assert!(has_rule(&findings, "A-01"), "expected A-01, got: {findings:?}");
+    assert!(
+        has_rule(&findings, "A-01"),
+        "expected A-01, got: {findings:?}"
+    );
     let a04_items: Vec<&Finding> = findings.iter().filter(|f| f.rule_id == "A-04").collect();
     assert!(!a04_items.is_empty(), "expected A-04, got: {findings:?}");
     // The A-04 about Address param not authenticated should be Medium
@@ -174,7 +180,10 @@ fn test_public_state_mutator_flagged_a04_high() {
     let findings = findings_for_source(source);
 
     // Should have both A-01 and A-04
-    assert!(has_rule(&findings, "A-01"), "expected A-01, got: {findings:?}");
+    assert!(
+        has_rule(&findings, "A-01"),
+        "expected A-01, got: {findings:?}"
+    );
     let a04_high: Vec<&Finding> = findings
         .iter()
         .filter(|f| f.rule_id == "A-04" && f.severity == Severity::High)
@@ -270,14 +279,20 @@ fn test_fixture_triggers_multiple_rules() {
         .iter()
         .filter(|f| f.rule_id == "A-04" && f.severity == Severity::High)
         .collect();
-    assert!(!a04_high.is_empty(), "expected A-04 High, got: {findings:?}");
+    assert!(
+        !a04_high.is_empty(),
+        "expected A-04 High, got: {findings:?}"
+    );
 
     // check_balance is pub, no auth, no address, no state write => A-04 Info
     let a04_info: Vec<&Finding> = findings
         .iter()
         .filter(|f| f.rule_id == "A-04" && f.severity == Severity::Info)
         .collect();
-    assert!(!a04_info.is_empty(), "expected A-04 Info, got: {findings:?}");
+    assert!(
+        !a04_info.is_empty(),
+        "expected A-04 Info, got: {findings:?}"
+    );
 
     // guarded_withdraw should have NO findings
     let guarded_findings: Vec<&Finding> = findings

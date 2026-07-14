@@ -18,7 +18,12 @@ pub struct Report {
 }
 
 impl Report {
-    pub fn new(contract_name: impl Into<String>, source_file: impl Into<String>, findings: Vec<Finding>, score: SecurityScore) -> Self {
+    pub fn new(
+        contract_name: impl Into<String>,
+        source_file: impl Into<String>,
+        findings: Vec<Finding>,
+        score: SecurityScore,
+    ) -> Self {
         let summary = generate_summary(&score);
         Report {
             contract_name: contract_name.into(),

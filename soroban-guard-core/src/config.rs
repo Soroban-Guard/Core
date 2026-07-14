@@ -59,7 +59,7 @@ impl Default for GeneralConfig {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct RulesConfig {
     #[serde(default)]
     pub reentrancy: RuleOverride,
@@ -69,17 +69,6 @@ pub struct RulesConfig {
     pub access_control: RuleOverride,
     #[serde(default)]
     pub storage: RuleOverride,
-}
-
-impl Default for RulesConfig {
-    fn default() -> Self {
-        RulesConfig {
-            reentrancy: RuleOverride::default(),
-            overflow: RuleOverride::default(),
-            access_control: RuleOverride::default(),
-            storage: RuleOverride::default(),
-        }
-    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -99,7 +88,7 @@ impl Default for RuleOverride {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct OutputConfig {
     #[serde(default)]
     pub format: Option<OutputFormat>,
@@ -107,19 +96,11 @@ pub struct OutputConfig {
     pub min_severity: Option<MinSeverity>,
 }
 
-impl Default for OutputConfig {
-    fn default() -> Self {
-        OutputConfig {
-            format: None,
-            min_severity: None,
-        }
-    }
-}
-
 impl ConfigFile {
     pub fn from_file(path: &Path) -> Result<Self, crate::error::SorobanGuardError> {
-        let content = std::fs::read_to_string(path)
-            .map_err(|e| crate::error::SorobanGuardError::Config(format!("Cannot read config: {}", e)))?;
+        let content = std::fs::read_to_string(path).map_err(|e| {
+            crate::error::SorobanGuardError::Config(format!("Cannot read config: {}", e))
+        })?;
         toml::from_str(&content)
             .map_err(|e| crate::error::SorobanGuardError::Config(format!("Invalid config: {}", e)))
     }

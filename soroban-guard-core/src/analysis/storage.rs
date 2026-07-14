@@ -48,14 +48,21 @@ impl StorageCollisionDetector {
     }
 
     // S-01: Short symbol keys (<= 2 chars)
-    fn check_s01(contract: &Contract, key_map: &HashMap<String, Vec<(String, &StorageAccess)>>, out: &mut Vec<Finding>) {
+    fn check_s01(
+        contract: &Contract,
+        key_map: &HashMap<String, Vec<(String, &StorageAccess)>>,
+        out: &mut Vec<Finding>,
+    ) {
         for (key, usages) in key_map {
             if Self::is_short_key(key) {
                 let pos = &usages[0].1.position;
                 out.push(Finding::new(
                     Severity::Medium,
                     "S-01",
-                    format!("Short storage key '{}' may collide with other contracts", key),
+                    format!(
+                        "Short storage key '{}' may collide with other contracts",
+                        key
+                    ),
                     Self::location(contract, pos),
                     "Use descriptive namespaced keys like 'v1_contract_balance'",
                 ));
@@ -64,14 +71,21 @@ impl StorageCollisionDetector {
     }
 
     // S-02: Generic storage key names
-    fn check_s02(contract: &Contract, key_map: &HashMap<String, Vec<(String, &StorageAccess)>>, out: &mut Vec<Finding>) {
+    fn check_s02(
+        contract: &Contract,
+        key_map: &HashMap<String, Vec<(String, &StorageAccess)>>,
+        out: &mut Vec<Finding>,
+    ) {
         for (key, usages) in key_map {
             if Self::is_generic_key(key) {
                 let pos = &usages[0].1.position;
                 out.push(Finding::new(
                     Severity::Low,
                     "S-02",
-                    format!("Generic storage key '{}' \u{2014} consider adding a namespace prefix", key),
+                    format!(
+                        "Generic storage key '{}' \u{2014} consider adding a namespace prefix",
+                        key
+                    ),
                     Self::location(contract, pos),
                     "Prefix with contract version: 'v1_{contract_name}_{key}'",
                 ));
@@ -80,7 +94,11 @@ impl StorageCollisionDetector {
     }
 
     // S-03: Mixed value types at the same key
-    fn check_s03(contract: &Contract, key_map: &HashMap<String, Vec<(String, &StorageAccess)>>, out: &mut Vec<Finding>) {
+    fn check_s03(
+        contract: &Contract,
+        key_map: &HashMap<String, Vec<(String, &StorageAccess)>>,
+        out: &mut Vec<Finding>,
+    ) {
         for (key, usages) in key_map {
             // Collect distinct value types from write operations
             let value_types: Vec<&(String, &StorageAccess)> = usages
@@ -96,7 +114,10 @@ impl StorageCollisionDetector {
             let mut seen_types: Vec<(&String, &StorageAccess)> = Vec::new();
             for ut in &value_types {
                 let vt = ut.1.value_type.as_deref().unwrap_or("");
-                if seen_types.iter().all(|(_, a)| a.value_type.as_deref() != Some(vt)) {
+                if seen_types
+                    .iter()
+                    .all(|(_, a)| a.value_type.as_deref() != Some(vt))
+                {
                     seen_types.push((&ut.0, ut.1));
                 }
             }
@@ -122,10 +143,18 @@ impl StorageCollisionDetector {
     }
 
     // S-04: Instance/temporary confusion for the same key
-    fn check_s04(contract: &Contract, key_map: &HashMap<String, Vec<(String, &StorageAccess)>>, out: &mut Vec<Finding>) {
+    fn check_s04(
+        contract: &Contract,
+        key_map: &HashMap<String, Vec<(String, &StorageAccess)>>,
+        out: &mut Vec<Finding>,
+    ) {
         for (key, usages) in key_map {
-            let has_instance = usages.iter().any(|(_, a)| a.storage_type == StorageType::Instance);
-            let has_temporary = usages.iter().any(|(_, a)| a.storage_type == StorageType::Temporary);
+            let has_instance = usages
+                .iter()
+                .any(|(_, a)| a.storage_type == StorageType::Instance);
+            let has_temporary = usages
+                .iter()
+                .any(|(_, a)| a.storage_type == StorageType::Temporary);
 
             if has_instance && has_temporary {
                 let pos = &usages[0].1.position;

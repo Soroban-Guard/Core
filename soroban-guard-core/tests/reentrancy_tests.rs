@@ -28,7 +28,10 @@ fn test_vulnerable_contract_triggers_r01() {
     let findings = findings_for("tests/fixtures/reentrancy_vulnerable.rs");
 
     // R-01: state write after external call, reported as Critical.
-    assert!(has_rule(&findings, "R-01"), "expected R-01, got: {findings:?}");
+    assert!(
+        has_rule(&findings, "R-01"),
+        "expected R-01, got: {findings:?}"
+    );
     let r01 = rule(&findings, "R-01");
     assert_eq!(r01.severity, Severity::Critical);
     assert!(r01.message.contains("withdraw"));
@@ -54,7 +57,10 @@ fn test_safe_contract_has_no_r01() {
 fn test_read_only_reentrancy_is_medium() {
     let findings = findings_for("tests/fixtures/reentrancy_readonly.rs");
 
-    assert!(has_rule(&findings, "R-02"), "expected R-02, got: {findings:?}");
+    assert!(
+        has_rule(&findings, "R-02"),
+        "expected R-02, got: {findings:?}"
+    );
     let r02 = rule(&findings, "R-02");
     assert_eq!(r02.severity, Severity::Medium);
     assert!(r02.message.contains("balance"));
@@ -118,7 +124,10 @@ fn test_no_external_calls_no_findings() {
     "#;
     let contract = ContractParser::new().parse_source(source).expect("parse");
     let findings = ReentrancyDetector.analyze(&contract);
-    assert!(findings.is_empty(), "expected no findings, got: {findings:?}");
+    assert!(
+        findings.is_empty(),
+        "expected no findings, got: {findings:?}"
+    );
 }
 
 #[test]

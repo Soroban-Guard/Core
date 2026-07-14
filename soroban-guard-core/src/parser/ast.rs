@@ -47,6 +47,12 @@ pub struct FnBodyAnalysis {
     pub hardcoded_address_strs: Vec<(String, SourcePos)>,
 }
 
+impl Default for FnBodyAnalysis {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl FnBodyAnalysis {
     pub fn new() -> Self {
         FnBodyAnalysis {

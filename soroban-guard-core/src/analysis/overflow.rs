@@ -122,7 +122,12 @@ impl OverflowChecker {
     /// O-01 (unchecked arithmetic) and O-02 (arithmetic compared to a
     /// threshold). These are mutually exclusive on a single expression, and
     /// neither fires when O-04 already claimed it.
-    fn check_o01_o02(contract: &Contract, func: &ContractFn, e: &ArithExpr, out: &mut Vec<Finding>) {
+    fn check_o01_o02(
+        contract: &Contract,
+        func: &ContractFn,
+        e: &ArithExpr,
+        out: &mut Vec<Finding>,
+    ) {
         if e.is_checked
             || !Self::is_overflowing_op(e.op)
             || e.return_type != "i128"
@@ -146,7 +151,10 @@ impl OverflowChecker {
                     e.right
                 ),
                 Self::location(contract, &e.position),
-                format!("Use {} for an explicit, checked result", e.op.checked_method()),
+                format!(
+                    "Use {} for an explicit, checked result",
+                    e.op.checked_method()
+                ),
             ));
             return;
         }

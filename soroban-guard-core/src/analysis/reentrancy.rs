@@ -207,7 +207,8 @@ fn is_guard_key(key: &str) -> bool {
 }
 
 /// The union of storage keys read or written by a function.
-fn storage_keys_of(func: &ContractFn) -> BTreeSet<String> {    let a = &func.body_analysis;
+fn storage_keys_of(func: &ContractFn) -> BTreeSet<String> {
+    let a = &func.body_analysis;
     a.storage_reads
         .iter()
         .chain(a.storage_writes.iter())

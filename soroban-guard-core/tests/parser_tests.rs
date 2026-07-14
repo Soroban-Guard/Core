@@ -15,7 +15,7 @@ fn test_parse_vault_fixture() {
     assert_eq!(constructor.name, "__constructor");
     assert!(constructor.is_init);
     assert_eq!(constructor.args.len(), 2);
-    assert!(constructor.body_analysis.storage_writes.len() >= 1);
+    assert!(!constructor.body_analysis.storage_writes.is_empty());
 
     // Verify deposit function
     let deposit = &contract.functions[1];
@@ -28,11 +28,14 @@ fn test_parse_vault_fixture() {
 
     // Verify auth check on deposit
     assert_eq!(deposit.body_analysis.auth_checks.len(), 1);
-    assert_eq!(deposit.body_analysis.auth_checks[0].kind, AuthKind::RequireAuth);
+    assert_eq!(
+        deposit.body_analysis.auth_checks[0].kind,
+        AuthKind::RequireAuth
+    );
 
     // Verify storage ops in deposit
-    assert!(deposit.body_analysis.storage_reads.len() >= 1);
-    assert!(deposit.body_analysis.storage_writes.len() >= 1);
+    assert!(!deposit.body_analysis.storage_reads.is_empty());
+    assert!(!deposit.body_analysis.storage_writes.is_empty());
 
     // Verify cross-contract call in transfer
     let transfer = &contract.functions[3];
@@ -52,7 +55,7 @@ fn test_parse_vault_fixture() {
     // check_balance only reads storage — no writes, no auth, no calls.
     let check_balance = &contract.functions[4];
     assert_eq!(check_balance.name, "check_balance");
-    assert!(check_balance.body_analysis.storage_reads.len() >= 1);
+    assert!(!check_balance.body_analysis.storage_reads.is_empty());
     assert_eq!(check_balance.body_analysis.storage_writes.len(), 0);
     assert_eq!(check_balance.body_analysis.auth_checks.len(), 0);
 

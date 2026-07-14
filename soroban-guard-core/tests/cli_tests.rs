@@ -134,7 +134,10 @@ fn test_cli_min_severity_critical_only() {
         .expect("failed to run");
     assert_eq!(output.status.code(), Some(EC_HIGH));
     let stdout = String::from_utf8_lossy(&output.stdout);
-    assert!(!stdout.contains("[High]"), "Expected no [High] section with critical filtering");
+    assert!(
+        !stdout.contains("[High]"),
+        "Expected no [High] section with critical filtering"
+    );
 }
 
 #[test]
