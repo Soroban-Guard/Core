@@ -1,5 +1,19 @@
 # Contributing
 
+## Workflow
+
+1. **Fork** the repository to your own GitHub account.
+2. **Clone** your fork locally and create a **branch** for your work (e.g., `fix/reentrancy-false-positive` or `feature/new-rule`).
+3. **Pick an issue** — look for open issues, preferably ones assigned to you or discussed in advance.
+4. **Commit** your changes with clear, descriptive messages.
+5. **Push** your branch and open a **Pull Request** against the main repository.
+   - Provide a detailed description linking to the issue(s) your PR addresses.
+   - Include a summary of changes, any relevant test results, and screenshots if the change is user-facing.
+6. **Respond to feedback** — a maintainer will review your PR. Address any requested changes.
+7. Once approved, your PR will be **merged**.
+
+> If you are part of the [Drips Wave Program](https://www.drips.network/wave/stellar), make sure your PR references the Drips issue or bounty so your contribution is tracked.
+
 ## Adding a new analysis rule
 
 1. Create a new file in `src/analysis/` (e.g., `new_rule.rs`)
