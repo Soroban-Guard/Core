@@ -220,5 +220,3 @@ impl AnalysisRule for AccessControlDetector {
         findings
     }
 }
-
-

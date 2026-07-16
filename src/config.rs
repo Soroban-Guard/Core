@@ -90,24 +90,34 @@ impl Default for RuleOverride {
 
 impl RuleOverride {
     pub fn to_severity(&self) -> Option<crate::report::severity::Severity> {
-        self.severity.as_ref().and_then(|s| match s.to_lowercase().as_str() {
-            "critical" => Some(crate::report::severity::Severity::Critical),
-            "high" => Some(crate::report::severity::Severity::High),
-            "medium" => Some(crate::report::severity::Severity::Medium),
-            "low" => Some(crate::report::severity::Severity::Low),
-            "info" => Some(crate::report::severity::Severity::Info),
-            _ => None,
-        })
+        self.severity
+            .as_ref()
+            .and_then(|s| match s.to_lowercase().as_str() {
+                "critical" => Some(crate::report::severity::Severity::Critical),
+                "high" => Some(crate::report::severity::Severity::High),
+                "medium" => Some(crate::report::severity::Severity::Medium),
+                "low" => Some(crate::report::severity::Severity::Low),
+                "info" => Some(crate::report::severity::Severity::Info),
+                _ => None,
+            })
     }
 }
 
 impl RulesConfig {
     pub fn enabled_rule_ids(&self) -> Vec<&'static str> {
         let mut ids = Vec::new();
-        if self.reentrancy.enabled.unwrap_or(true) { ids.push("reentrancy"); }
-        if self.overflow.enabled.unwrap_or(true) { ids.push("overflow"); }
-        if self.access_control.enabled.unwrap_or(true) { ids.push("access_control"); }
-        if self.storage.enabled.unwrap_or(true) { ids.push("storage"); }
+        if self.reentrancy.enabled.unwrap_or(true) {
+            ids.push("reentrancy");
+        }
+        if self.overflow.enabled.unwrap_or(true) {
+            ids.push("overflow");
+        }
+        if self.access_control.enabled.unwrap_or(true) {
+            ids.push("access_control");
+        }
+        if self.storage.enabled.unwrap_or(true) {
+            ids.push("storage");
+        }
         ids
     }
 }

@@ -67,7 +67,12 @@ fn resolve_rule_ids(cli: &Cli, cfg: Option<&ConfigFile>) -> Option<Vec<String>> 
         return Some(Vec::new());
     }
     if let Some(cfg) = cfg {
-        let ids: Vec<String> = cfg.rules.enabled_rule_ids().into_iter().map(|s| s.to_string()).collect();
+        let ids: Vec<String> = cfg
+            .rules
+            .enabled_rule_ids()
+            .into_iter()
+            .map(|s| s.to_string())
+            .collect();
         return Some(ids);
     }
     None
@@ -95,7 +100,11 @@ fn main() -> Result<()> {
     let mut cli = Cli::parse();
 
     // Load config file if specified
-    let cfg = cli.config.as_ref().map(|p| ConfigFile::from_file(p)).transpose()?;
+    let cfg = cli
+        .config
+        .as_ref()
+        .map(|p| ConfigFile::from_file(p))
+        .transpose()?;
     if let Some(ref cfg) = cfg {
         if let Some(ref fmt) = cfg.output.format {
             cli.format = fmt.clone();
@@ -140,7 +149,10 @@ fn main() -> Result<()> {
 
     // If --rules specifies finding-level IDs (e.g. "S-02"), keep them for post-filtering
     let finding_filters: Option<Vec<String>> = cli.rules.as_ref().map(|r| {
-        r.split(',').map(|s| s.trim().to_string()).filter(|s| !s.is_empty()).collect()
+        r.split(',')
+            .map(|s| s.trim().to_string())
+            .filter(|s| !s.is_empty())
+            .collect()
     });
 
     // Build severity overrides from config
@@ -169,17 +181,16 @@ fn main() -> Result<()> {
                         Err(_) => continue,
                     };
                     if let Ok(contract) = parser_ref.parse_source(&source) {
-                        let mut report = engine_ref.analyze_contract(
-                            &contract,
-                            &file.to_string_lossy(),
-                        );
+                        let mut report =
+                            engine_ref.analyze_contract(&contract, &file.to_string_lossy());
                         // Apply severity overrides and recalculate score
                         if !severity_overrides_ref.is_empty() {
                             AnalysisEngine::apply_overrides(
                                 severity_overrides_ref,
                                 &mut report.findings,
                             );
-                            let score = soroban_guard_core::scoring::calculate_score(&report.findings);
+                            let score =
+                                soroban_guard_core::scoring::calculate_score(&report.findings);
                             report.summary = soroban_guard_core::scoring::generate_summary(&score);
                             report.score = score;
                         }
@@ -211,7 +222,9 @@ fn main() -> Result<()> {
         for entry in &mut consolidated.reports {
             entry.findings.retain(|f| filter_ids.contains(&f.rule_id));
         }
-        consolidated.all_findings.retain(|f| filter_ids.contains(&f.rule_id));
+        consolidated
+            .all_findings
+            .retain(|f| filter_ids.contains(&f.rule_id));
         // Recalculate total score after filtering
         let score = soroban_guard_core::scoring::calculate_score(&consolidated.all_findings);
         consolidated.summary = soroban_guard_core::scoring::generate_summary(&score);

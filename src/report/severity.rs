@@ -21,7 +21,6 @@ impl Severity {
             Severity::Info => "INFO",
         }
     }
-
 }
 
 impl fmt::Display for Severity {

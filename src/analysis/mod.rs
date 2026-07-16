@@ -59,10 +59,18 @@ impl AnalysisEngine {
         let mut engine = Self::new();
         for &id in ids {
             match id {
-                "reentrancy" => { engine.register(Box::new(reentrancy::ReentrancyDetector)); }
-                "overflow" => { engine.register(Box::new(overflow::OverflowChecker)); }
-                "access_control" => { engine.register(Box::new(access_control::AccessControlDetector)); }
-                "storage" => { engine.register(Box::new(storage::StorageCollisionDetector)); }
+                "reentrancy" => {
+                    engine.register(Box::new(reentrancy::ReentrancyDetector));
+                }
+                "overflow" => {
+                    engine.register(Box::new(overflow::OverflowChecker));
+                }
+                "access_control" => {
+                    engine.register(Box::new(access_control::AccessControlDetector));
+                }
+                "storage" => {
+                    engine.register(Box::new(storage::StorageCollisionDetector));
+                }
                 _ => {}
             }
         }
@@ -78,10 +86,7 @@ impl AnalysisEngine {
     /// Apply severity overrides from config to a set of findings.
     /// Each override changes the severity of all findings whose rule_id
     /// matches the given rule family prefix (e.g. "R-" for reentrancy).
-    pub fn apply_overrides(
-        overrides: &[(&str, &RuleOverride)],
-        findings: &mut [Finding],
-    ) {
+    pub fn apply_overrides(overrides: &[(&str, &RuleOverride)], findings: &mut [Finding]) {
         for (prefix, override_) in overrides {
             if let Some(ref sev_str) = override_.severity {
                 if let Some(sev) = Self::parse_severity(sev_str) {

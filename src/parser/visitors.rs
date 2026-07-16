@@ -106,7 +106,10 @@ fn extract_target_from_expr(expr: &syn::Expr) -> String {
     expr_to_string(patterns::unwrap_expr(expr))
 }
 
-fn extract_auth_target(chain: &[String], args: &syn::punctuated::Punctuated<syn::Expr, syn::Token![,]>) -> String {
+fn extract_auth_target(
+    chain: &[String],
+    args: &syn::punctuated::Punctuated<syn::Expr, syn::Token![,]>,
+) -> String {
     if chain.len() >= 2 && chain[0] == "env" {
         args.first()
             .map(extract_target_from_expr)

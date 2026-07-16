@@ -230,5 +230,3 @@ impl AnalysisRule for OverflowChecker {
         findings
     }
 }
-
-

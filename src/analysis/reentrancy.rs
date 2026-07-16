@@ -246,5 +246,3 @@ impl AnalysisRule for ReentrancyDetector {
         findings
     }
 }
-
-

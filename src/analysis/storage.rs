@@ -216,5 +216,3 @@ impl AnalysisRule for StorageCollisionDetector {
         findings
     }
 }
-
-
