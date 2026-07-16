@@ -1,7 +1,7 @@
 # Soroban Guard
 
 [![CI](https://img.shields.io/github/actions/workflow/status/Soroban-Guard/Core/ci.yml?branch=main&label=CI)](https://github.com/Soroban-Guard/Core/actions)
-[![Crates.io](https://img.shields.io/crates/v/soroban-guard-core)](https://crates.io/crates/soroban-guard-core)
+[![GitHub release](https://img.shields.io/github/v/release/Soroban-Guard/Core)](https://github.com/Soroban-Guard/Core/releases)
 [![MIT License](https://img.shields.io/github/license/Soroban-Guard/Core)](LICENSE)
 
 **Soroban Guard** is a static analysis and security auditing toolchain for [Soroban smart contracts](https://soroban.stellar.org/) — the Rust-based smart contract platform on the Stellar network. It analyzes Rust source code to detect common security vulnerabilities before deployment, providing actionable feedback through multiple output formats and CI/CD integrations.
