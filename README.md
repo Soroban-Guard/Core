@@ -62,7 +62,7 @@ cargo build --release
 
 ### System requirements
 
-- Rust edition 2021, minimum supported Rust version (MSRV): stable
+- Rust edition 2021, minimum supported Rust version (MSRV): 1.70
 - No external runtime dependencies — the binary is self-contained
 
 ---
@@ -95,12 +95,15 @@ soroban-guard-core --config soroban-guard.toml ./contracts/
 ### CLI Options
 
 | Option | Short | Description |
-|---|---|---|
+|---|---|---|---|
 | `PATH` | | File or directory to scan (multiple allowed) |
 | `--format` | `-f` | Output format: `human`, `json`, `sarif` (default: `human`) |
-| `--min-severity` | `-m` | Minimum severity to report: `info`, `low`, `medium`, `high`, `critical` (default: `info`) |
+| `--min-severity` | `-m` | Minimum severity to report: `info`, `low`, `medium`, `high`, `critical` (default: `low`) |
 | `--output` | `-o` | Write output to a file |
 | `--exclude` | | Glob patterns to exclude (comma-separated) |
+| `--jobs` | | Number of parallel workers (default: `4`) |
+| `--all` | | Enable all rule families (default: `true`) |
+| `--rules` | | Comma-separated finding rule IDs to show (e.g. `R-01,S-02`) |
 | `--sarif` | | Shorthand for `--format sarif` |
 | `--config` | | Path to TOML configuration file |
 
@@ -172,13 +175,21 @@ Create a `soroban-guard.toml` file in your project root:
 ```toml
 [general]
 exclude = ["**/test_*", "**/fixtures/*"]
+jobs = 4
 
 [output]
 format = "human"
 min_severity = "low"
+
+[rules.reentrancy]
+enabled = true
+severity = "high"
+
+[rules.storage]
+enabled = false
 ```
 
-Configuration file can be passed via `--config` or auto-detected when placed in the project root.
+Configuration file can be passed via `--config`.
 
 ---
 

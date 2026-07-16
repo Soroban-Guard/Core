@@ -151,17 +151,18 @@ impl AccessControlDetector {
 
         // Has Address params but no auth and writes storage
         if has_address && !has_auth && has_storage_write {
-            let addr_param = func.args.iter().find(|a| a.type_name == "Address").unwrap();
-            out.push(Finding::new(
-                Severity::Medium,
-                "A-04",
-                format!(
-                    "Function '{}' takes Address parameter '{}' but doesn't authenticate it",
-                    func.name, addr_param.name,
-                ),
-                Self::location(contract, &SourcePos { line: 0, column: 0 }),
-                "Use require_auth() with the Address parameter to ensure only that user can call",
-            ));
+            if let Some(addr_param) = func.args.iter().find(|a| a.type_name == "Address") {
+                out.push(Finding::new(
+                    Severity::Medium,
+                    "A-04",
+                    format!(
+                        "Function '{}' takes Address parameter '{}' but doesn't authenticate it",
+                        func.name, addr_param.name,
+                    ),
+                    Self::location(contract, &SourcePos { line: 0, column: 0 }),
+                    "Use require_auth() with the Address parameter to ensure only that user can call",
+                ));
+            }
         }
     }
 

@@ -2,7 +2,15 @@
 name = "soroban-guard-core"
 version = "0.1.0"
 edition = "2021"
+rust-version = "1.70"
 description = "Static analysis and security auditing toolchain for Soroban smart contracts"
+authors = ["Soroban Guard Contributors"]
+keywords = ["soroban", "stellar", "security", "static-analysis", "smart-contracts"]
+categories = ["development-tools::audit", "development-tools::code-analysis", "compilers::procedural-macros"]
+readme = "README.md"
+repository = "https://github.com/Soroban-Guard/Core"
+homepage = "https://github.com/Soroban-Guard/Core"
+license = "MIT OR Apache-2.0"
 
 [lib]
 name = "soroban_guard_core"
