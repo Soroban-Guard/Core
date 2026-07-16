@@ -20,24 +20,6 @@ pub struct SeverityBreakdown {
     pub info: u32,
 }
 
-pub struct ScoringEngine;
-
-impl ScoringEngine {
-    pub fn new() -> Self {
-        ScoringEngine
-    }
-
-    pub fn calculate_score(&self, findings: &[Finding]) -> SecurityScore {
-        calculate_score(findings)
-    }
-}
-
-impl Default for ScoringEngine {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 pub fn calculate_score(findings: &[Finding]) -> SecurityScore {
     let mut score: f64 = 100.0;
 

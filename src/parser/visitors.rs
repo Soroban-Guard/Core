@@ -106,6 +106,35 @@ fn extract_target_from_expr(expr: &syn::Expr) -> String {
     expr_to_string(patterns::unwrap_expr(expr))
 }
 
+fn extract_auth_target(chain: &[String], args: &syn::punctuated::Punctuated<syn::Expr, syn::Token![,]>) -> String {
+    if chain.len() >= 2 && chain[0] == "env" {
+        args.first()
+            .map(extract_target_from_expr)
+            .unwrap_or_default()
+    } else {
+        chain.first().cloned().unwrap_or_default()
+    }
+}
+
+fn record_auth_check(
+    method_name: &str,
+    chain: &[String],
+    args: &syn::punctuated::Punctuated<syn::Expr, syn::Token![,]>,
+    analysis: &mut FnBodyAnalysis,
+) {
+    if patterns::method_is_require_auth(method_name) && method_name != "require_auth_for_args" {
+        analysis.auth_checks.push(AuthCheck {
+            kind: AuthKind::RequireAuth,
+            target: extract_auth_target(chain, args),
+        });
+    } else if patterns::method_is_require_auth_for_args(method_name) {
+        analysis.auth_checks.push(AuthCheck {
+            kind: AuthKind::RequireAuthForArgs,
+            target: extract_auth_target(chain, args),
+        });
+    }
+}
+
 /// Extract the bare invoked-function name from a cross-contract call argument.
 /// Unlike `extract_target_from_expr`, a `Symbol::new(&env, "transfer")` yields
 /// the plain `transfer` rather than a `Symbol("transfer")` wrapper.
@@ -655,41 +684,8 @@ impl<'ast> Visit<'ast> for ContractVisitor {
                 analysis.calls_external = true;
             }
 
-            // Check for require_auth method calls: addr.require_auth() or env.require_auth(&addr)
-            if patterns::method_is_require_auth(&method_name)
-                && method_name != "require_auth_for_args"
-            {
-                let target = if chain.len() >= 2 && chain[0] == "env" {
-                    expr.args
-                        .first()
-                        .map(extract_target_from_expr)
-                        .unwrap_or_default()
-                } else {
-                    chain.first().cloned().unwrap_or_default()
-                };
-
-                analysis.auth_checks.push(AuthCheck {
-                    kind: AuthKind::RequireAuth,
-                    target,
-                });
-            }
-
-            // Check for require_auth_for_args method calls
-            if patterns::method_is_require_auth_for_args(&method_name) {
-                let target = if chain.len() >= 2 && chain[0] == "env" {
-                    expr.args
-                        .first()
-                        .map(extract_target_from_expr)
-                        .unwrap_or_default()
-                } else {
-                    chain.first().cloned().unwrap_or_default()
-                };
-
-                analysis.auth_checks.push(AuthCheck {
-                    kind: AuthKind::RequireAuthForArgs,
-                    target,
-                });
-            }
+            // Check for require_auth/require_auth_for_args method calls
+            record_auth_check(&method_name, &chain, &expr.args, analysis);
         }
 
         syn::visit::visit_expr_method_call(self, expr);

@@ -1,8 +1,7 @@
 use std::collections::HashMap;
 
-use super::{AnalysisRule, Analyzer};
+use super::AnalysisRule;
 use crate::parser::ast::{Contract, SourcePos, StorageAccess, StorageType};
-use crate::parser::ContractParser;
 use crate::report::finding::Finding;
 use crate::report::severity::Severity;
 
@@ -218,16 +217,4 @@ impl AnalysisRule for StorageCollisionDetector {
     }
 }
 
-impl Analyzer for StorageCollisionDetector {
-    fn analyze(&self, source: &str, _file_path: &str) -> Vec<Finding> {
-        let parser = ContractParser::new();
-        match parser.parse_source(source) {
-            Ok(contract) => AnalysisRule::analyze(self, &contract),
-            Err(_) => Vec::new(),
-        }
-    }
 
-    fn name(&self) -> &'static str {
-        "storage"
-    }
-}

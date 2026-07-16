@@ -1,9 +1,10 @@
 use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
 
 use clap::Parser;
 
 use soroban_guard_core::analysis::AnalysisEngine;
-use soroban_guard_core::config::{ConfigFile, MinSeverity, OutputFormat};
+use soroban_guard_core::config::{ConfigFile, MinSeverity, OutputFormat, RuleOverride};
 use soroban_guard_core::error::Result;
 use soroban_guard_core::parser::ContractParser;
 use soroban_guard_core::report::output::{
@@ -59,23 +60,58 @@ struct Cli {
     config: Option<PathBuf>,
 }
 
+/// Returns `Some(ids)` when rule selection is explicitly specified,
+/// or `None` to indicate "all rules" (the default fallback).
+fn resolve_rule_ids(cli: &Cli, cfg: Option<&ConfigFile>) -> Option<Vec<&'static str>> {
+    if let Some(rules_str) = &cli.rules {
+        let ids: Vec<_> = rules_str.split(',').map(|s| s.trim()).filter(|s| !s.is_empty()).collect();
+        return Some(ids);
+    }
+    if !cli.all {
+        return Some(Vec::new());
+    }
+    if let Some(cfg) = cfg {
+        let ids = cfg.rules.enabled_rule_ids();
+        return Some(ids);
+    }
+    None
+}
+
+fn build_severity_overrides(cfg: Option<&ConfigFile>) -> Vec<(&'static str, &'_ RuleOverride)> {
+    let Some(cfg) = cfg else { return Vec::new() };
+    let mut overrides = Vec::new();
+    if cfg.rules.reentrancy.severity.is_some() {
+        overrides.push(("R-", &cfg.rules.reentrancy));
+    }
+    if cfg.rules.overflow.severity.is_some() {
+        overrides.push(("O-", &cfg.rules.overflow));
+    }
+    if cfg.rules.access_control.severity.is_some() {
+        overrides.push(("A-", &cfg.rules.access_control));
+    }
+    if cfg.rules.storage.severity.is_some() {
+        overrides.push(("S-", &cfg.rules.storage));
+    }
+    overrides
+}
+
 fn main() -> Result<()> {
     let mut cli = Cli::parse();
 
     // Load config file if specified
-    if let Some(config_path) = &cli.config {
-        let cfg = ConfigFile::from_file(config_path)?;
+    let cfg = cli.config.as_ref().map(|p| ConfigFile::from_file(p)).transpose()?;
+    if let Some(ref cfg) = cfg {
         if let Some(ref fmt) = cfg.output.format {
             cli.format = fmt.clone();
         }
         if let Some(ref ms) = cfg.output.min_severity {
             cli.min_severity = ms.clone();
         }
-        if let Some(jobs) = cfg.general.jobs {
-            cli.jobs = jobs;
-        }
         if cli.exclude.is_none() && !cfg.general.exclude.is_empty() {
             cli.exclude = Some(cfg.general.exclude.join(","));
+        }
+        if let Some(jobs) = cfg.general.jobs {
+            cli.jobs = jobs;
         }
     }
 
@@ -93,25 +129,74 @@ fn main() -> Result<()> {
         return Ok(());
     }
 
-    // Initialize analysis engine
-    let engine = AnalysisEngine::with_default_rules();
-
-    // Parse and analyze each contract
-    let parser = ContractParser::new();
-    let mut reports: Vec<Report> = Vec::new();
-
-    for file in &files {
-        let source = std::fs::read_to_string(file)?;
-        if let Ok(contract) = parser.parse_source(&source) {
-            let report = engine.analyze_contract(&contract, &file.to_string_lossy());
-            reports.push(report);
+    // Resolve which rules to run
+    let engine = match resolve_rule_ids(&cli, cfg.as_ref()) {
+        Some(ids) => {
+            if ids.is_empty() {
+                AnalysisEngine::new()
+            } else {
+                AnalysisEngine::with_rules(&ids)
+            }
         }
-    }
+        None => AnalysisEngine::with_default_rules(),
+    };
 
+    // Build severity overrides from config
+    let severity_overrides = build_severity_overrides(cfg.as_ref());
+
+    // Parse and analyze contracts (parallel with --jobs)
+    let parser = ContractParser::new();
+    let files = Arc::new(files);
+    let reports = Arc::new(Mutex::new(Vec::new()));
+    let engine_ref = &engine;
+    let parser_ref = &parser;
+    let severity_overrides_ref = &severity_overrides;
+
+    let worker_count = cli.jobs.max(1);
+    std::thread::scope(|s| {
+        for worker_id in 0..worker_count {
+            let files = Arc::clone(&files);
+            let reports = Arc::clone(&reports);
+            s.spawn(move || {
+                let mut local = Vec::new();
+                // Round-robin file distribution
+                for i in (worker_id..files.len()).step_by(worker_count) {
+                    let file = &files[i];
+                    let source = match std::fs::read_to_string(file) {
+                        Ok(s) => s,
+                        Err(_) => continue,
+                    };
+                    if let Ok(contract) = parser_ref.parse_source(&source) {
+                        let mut report = engine_ref.analyze_contract(
+                            &contract,
+                            &file.to_string_lossy(),
+                        );
+                        // Apply severity overrides and recalculate score
+                        if !severity_overrides_ref.is_empty() {
+                            AnalysisEngine::apply_overrides(
+                                severity_overrides_ref,
+                                &mut report.findings,
+                            );
+                            let score = soroban_guard_core::scoring::calculate_score(&report.findings);
+                            report.score = score;
+                            report.summary = soroban_guard_core::scoring::generate_summary(&score);
+                        }
+                        local.push(report);
+                    }
+                }
+                reports.lock().unwrap().extend(local);
+            });
+        }
+    });
+
+    let mut reports = reports.into_inner().unwrap();
     if reports.is_empty() {
         eprintln!("No Soroban contracts found in the specified files");
         return Ok(());
     }
+
+    // Sort reports by file name for deterministic output
+    reports.sort_by(|a, b| a.source_file.cmp(&b.source_file));
 
     // Build consolidated report
     let mut consolidated = ConsolidatedReport::new(&reports);

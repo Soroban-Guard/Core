@@ -3,15 +3,12 @@ pub mod overflow;
 pub mod reentrancy;
 pub mod storage;
 
+use crate::config::RuleOverride;
 use crate::parser::ast::Contract;
 use crate::report::finding::Finding;
+use crate::report::severity::Severity;
 use crate::report::Report;
 use crate::scoring::calculate_score;
-
-pub trait Analyzer {
-    fn analyze(&self, source: &str, file_path: &str) -> Vec<Finding>;
-    fn name(&self) -> &'static str;
-}
 
 /// A structural analysis rule that operates on a fully parsed [`Contract`]
 /// rather than raw source text. This is the interface detectors (like the
@@ -53,10 +50,60 @@ impl AnalysisEngine {
         engine
     }
 
+    /// Create an engine with only the specified rule IDs registered.
+    /// Empty slice means all rules are registered (same as `with_default_rules`).
+    pub fn with_rules(ids: &[&str]) -> Self {
+        if ids.is_empty() {
+            return Self::with_default_rules();
+        }
+        let mut engine = Self::new();
+        for &id in ids {
+            match id {
+                "reentrancy" => engine.register(Box::new(reentrancy::ReentrancyDetector)),
+                "overflow" => engine.register(Box::new(overflow::OverflowChecker)),
+                "access_control" => engine.register(Box::new(access_control::AccessControlDetector)),
+                "storage" => engine.register(Box::new(storage::StorageCollisionDetector)),
+                _ => {},
+            }
+        }
+        engine
+    }
+
     /// Register a rule. Rules execute in the order they are registered.
     pub fn register(&mut self, rule: Box<dyn AnalysisRule>) -> &mut Self {
         self.rules.push(rule);
         self
+    }
+
+    /// Apply severity overrides from config to a set of findings.
+    /// Each override changes the severity of all findings whose rule_id
+    /// matches the given rule family prefix (e.g. "R-" for reentrancy).
+    pub fn apply_overrides(
+        overrides: &[(&str, &RuleOverride)],
+        findings: &mut [Finding],
+    ) {
+        for (prefix, override_) in overrides {
+            if let Some(ref sev_str) = override_.severity {
+                if let Some(sev) = Self::parse_severity(sev_str) {
+                    for finding in findings.iter_mut() {
+                        if finding.rule_id.starts_with(prefix) {
+                            finding.severity = sev.clone();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fn parse_severity(s: &str) -> Option<Severity> {
+        match s.to_lowercase().as_str() {
+            "critical" => Some(Severity::Critical),
+            "high" => Some(Severity::High),
+            "medium" => Some(Severity::Medium),
+            "low" => Some(Severity::Low),
+            "info" => Some(Severity::Info),
+            _ => None,
+        }
     }
 
     /// Run every registered rule against `contract`, returning all findings.

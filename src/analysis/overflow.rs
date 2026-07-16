@@ -29,9 +29,8 @@
 //! [`ArithExpr`]: crate::parser::ast::ArithExpr
 //! [`CastExpr`]: crate::parser::ast::CastExpr
 
-use super::{AnalysisRule, Analyzer};
+use super::AnalysisRule;
 use crate::parser::ast::{ArithExpr, ArithOp, Contract, ContractFn, SourcePos};
-use crate::parser::ContractParser;
 use crate::report::finding::Finding;
 use crate::report::severity::Severity;
 
@@ -232,18 +231,4 @@ impl AnalysisRule for OverflowChecker {
     }
 }
 
-/// Bridge to the source-level [`Analyzer`] pipeline used by the CLI. Files that
-/// fail to parse yield no findings rather than aborting the run.
-impl Analyzer for OverflowChecker {
-    fn analyze(&self, source: &str, _file_path: &str) -> Vec<Finding> {
-        let parser = ContractParser::new();
-        match parser.parse_source(source) {
-            Ok(contract) => AnalysisRule::analyze(self, &contract),
-            Err(_) => Vec::new(),
-        }
-    }
 
-    fn name(&self) -> &'static str {
-        "overflow"
-    }
-}

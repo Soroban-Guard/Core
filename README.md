@@ -34,9 +34,8 @@ Soroban Guard is part of a broader ecosystem. This repository contains the core 
 - **Storage Collision Detection** — Prevents short or generic key names, type mismatches, and instance-vs-temporary access conflicts (S-01 to S-05).
 - **Security Scoring** — Computes a 0–100 score with letter grades (A–F) and a severity breakdown for quick triage.
 - **Multiple Output Formats** — Human-readable terminal output, structured JSON, and SARIF for GitHub Code Scanning.
-- **Parallel Analysis** — Uses Rayon for concurrent processing across multiple source files.
 - **CI/CD Ready** — Exits with code 1 when critical or high severity findings are present.
-- **Configurable** — TOML-based configuration with per-rule severity overrides, exclusion patterns, and output controls.
+- **Configurable** — TOML-based configuration with exclusion patterns and output controls.
 
 ---
 
@@ -45,14 +44,14 @@ Soroban Guard is part of a broader ecosystem. This repository contains the core 
 ### From crates.io
 
 ```bash
-cargo install soroban-guard
+cargo install soroban-guard-core
 ```
 
 ### From source
 
 ```bash
 git clone https://github.com/Soroban-Guard/Core.git
-cd Core/soroban-guard-core
+cd Core
 cargo build --release
 ./target/release/soroban-guard-core --help
 ```
@@ -98,11 +97,8 @@ soroban-guard-core --config soroban-guard.toml ./contracts/
 | `--min-severity` | `-m` | Minimum severity to report: `info`, `low`, `medium`, `high`, `critical` (default: `info`) |
 | `--output` | `-o` | Write output to a file |
 | `--exclude` | | Glob patterns to exclude (comma-separated) |
-| `--jobs` | `-j` | Number of parallel worker threads |
 | `--sarif` | | Shorthand for `--format sarif` |
-| `--config` | `-c` | Path to TOML configuration file |
-| `--all` | `-a` | Run all rule sets |
-| `--rules` | `-r` | Specific rule sets to run: `reentrancy`, `overflow`, `access-control`, `storage` |
+| `--config` | | Path to TOML configuration file |
 
 ---
 
@@ -172,25 +168,10 @@ Create a `soroban-guard.toml` file in your project root:
 ```toml
 [general]
 exclude = ["**/test_*", "**/fixtures/*"]
-jobs = 4
-min_severity = "low"
-
-[rules.reentrancy]
-enabled = true
-
-[rules.overflow]
-enabled = true
-severity.O-01 = "medium"
-
-[rules.access_control]
-enabled = true
-
-[rules.storage]
-enabled = true
 
 [output]
 format = "human"
-file = "report.txt"
+min_severity = "low"
 ```
 
 Configuration file can be passed via `--config` or auto-detected when placed in the project root.
@@ -273,7 +254,7 @@ The dedicated [Soroban Guard GitHub Action](https://github.com/Soroban-Guard/Act
 Or use the CLI directly in any CI pipeline:
 
 ```yaml
-- run: cargo install soroban-guard
+- run: cargo install soroban-guard-core
 - run: soroban-guard --sarif --output results.sarif ./contracts/
 - uses: github/codeql-action/upload-sarif@v3
   with:

@@ -11,8 +11,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions-rust-lang/setup-rust-toolchain@v1
-      - run: cargo install soroban-guard
-      - run: soroban-guard --sarif --output results.sarif ./contracts/
+      - run: cargo install soroban-guard-core
+      - run: soroban-guard-core --sarif --output results.sarif ./contracts/
       - uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: results.sarif
@@ -27,7 +27,7 @@ repos:
     hooks:
       - id: soroban-guard
         name: Soroban Guard
-        entry: soroban-guard
+        entry: soroban-guard-core
         language: system
         files: '\.rs$'
 ```

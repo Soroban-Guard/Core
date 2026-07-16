@@ -14,7 +14,7 @@ cargo build --release
 ### Using Cargo
 
 ```bash
-cargo install soroban-guard
+cargo install soroban-guard-core
 ```
 
 ## Run your first analysis

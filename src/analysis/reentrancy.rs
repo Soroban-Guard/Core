@@ -22,9 +22,8 @@
 
 use std::collections::BTreeSet;
 
-use super::{AnalysisRule, Analyzer};
+use super::AnalysisRule;
 use crate::parser::ast::{Contract, ContractFn, SourcePos, StorageAccess};
-use crate::parser::ContractParser;
 use crate::report::finding::Finding;
 use crate::report::severity::Severity;
 
@@ -248,20 +247,4 @@ impl AnalysisRule for ReentrancyDetector {
     }
 }
 
-/// Bridge to the source-level [`Analyzer`] pipeline used by the CLI. Parses the
-/// source into a [`Contract`] and runs the reentrancy rule over it. Files that
-/// fail to parse (non-contract Rust, syntax errors) yield no findings rather
-/// than aborting the run.
-impl Analyzer for ReentrancyDetector {
-    fn analyze(&self, source: &str, _file_path: &str) -> Vec<Finding> {
-        let parser = ContractParser::new();
-        match parser.parse_source(source) {
-            Ok(contract) => AnalysisRule::analyze(self, &contract),
-            Err(_) => Vec::new(),
-        }
-    }
 
-    fn name(&self) -> &'static str {
-        "reentrancy"
-    }
-}

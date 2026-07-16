@@ -22,15 +22,6 @@ impl Severity {
         }
     }
 
-    pub fn score_penalty(&self) -> u8 {
-        match self {
-            Severity::Critical => 25,
-            Severity::High => 15,
-            Severity::Medium => 10,
-            Severity::Low => 5,
-            Severity::Info => 0,
-        }
-    }
 }
 
 impl fmt::Display for Severity {

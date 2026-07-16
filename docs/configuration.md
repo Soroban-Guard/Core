@@ -10,8 +10,6 @@ The config file can be placed anywhere and loaded with `--config <path>`.
 
 ```toml
 [general]
-min_severity = "medium"
-jobs = 4
 exclude = ["**/test_*", "**/mocks/*"]
 
 [output]
@@ -25,8 +23,6 @@ min_severity = "high"
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| `min_severity` | string | `"low"` | Minimum severity: `critical`, `high`, `medium`, `low`, `info` |
-| `jobs` | integer | `4` | Number of parallel workers |
 | `exclude` | array | `[]` | Glob patterns to exclude from scanning |
 
 ### `[output]`
@@ -40,12 +36,11 @@ min_severity = "high"
 
 ```toml
 [general]
-min_severity = "medium"
-jobs = 8
 exclude = ["**/test_*", "**/fixtures/*"]
 
 [output]
 format = "sarif"
+min_severity = "medium"
 ```
 
 Config options are overridden by CLI flags when both are specified.

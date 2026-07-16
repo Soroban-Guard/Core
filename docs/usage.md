@@ -20,9 +20,6 @@ soroban-guard-core [OPTIONS] [PATH]...
 | `-m, --min-severity <LEVEL>` | Minimum severity to report: `critical`, `high`, `medium`, `low`, `info` | `low` |
 | `-o, --output <FILE>` | Write output to file instead of stdout | None |
 | `--exclude <PATTERNS>` | Comma-separated glob patterns to exclude | None |
-| `--jobs <N>` | Number of parallel workers | `4` |
-| `--all` | Enable all analysis rules | true |
-| `--rules <IDS>` | Comma-separated rule IDs to run (e.g., `R-01,O-01`) | All |
 | `--sarif` | Shortcut for `--format sarif` | false |
 | `--config <FILE>` | Path to TOML config file | None |
 | `-h, --help` | Print help | |
@@ -58,12 +55,6 @@ soroban-guard-core --sarif -o results.sarif ./contracts/
 
 ```bash
 soroban-guard-core --min-severity critical contract.rs
-```
-
-### Run specific rules
-
-```bash
-soroban-guard-core --rules R-01,O-01 contract.rs
 ```
 
 ### With config file
