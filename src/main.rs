@@ -11,7 +11,6 @@ use soroban_guard_core::report::output::{
     discover_contracts, filter_by_severity, format_human, format_json, format_sarif,
     ConsolidatedReport,
 };
-use soroban_guard_core::report::Report;
 
 #[derive(Parser)]
 #[command(
@@ -62,16 +61,13 @@ struct Cli {
 
 /// Returns `Some(ids)` when rule selection is explicitly specified,
 /// or `None` to indicate "all rules" (the default fallback).
-fn resolve_rule_ids(cli: &Cli, cfg: Option<&ConfigFile>) -> Option<Vec<&'static str>> {
-    if let Some(rules_str) = &cli.rules {
-        let ids: Vec<_> = rules_str.split(',').map(|s| s.trim()).filter(|s| !s.is_empty()).collect();
-        return Some(ids);
-    }
+/// Note: `--rules` flag is a finding-level post-filter, not an engine family filter.
+fn resolve_rule_ids(cli: &Cli, cfg: Option<&ConfigFile>) -> Option<Vec<String>> {
     if !cli.all {
         return Some(Vec::new());
     }
     if let Some(cfg) = cfg {
-        let ids = cfg.rules.enabled_rule_ids();
+        let ids: Vec<String> = cfg.rules.enabled_rule_ids().into_iter().map(|s| s.to_string()).collect();
         return Some(ids);
     }
     None
@@ -119,7 +115,7 @@ fn main() -> Result<()> {
     let format = if cli.sarif {
         OutputFormat::Sarif
     } else {
-        cli.format
+        cli.format.clone()
     };
 
     // Discover contract files
@@ -129,17 +125,23 @@ fn main() -> Result<()> {
         return Ok(());
     }
 
-    // Resolve which rules to run
+    // Resolve which rule families to register in the engine
     let engine = match resolve_rule_ids(&cli, cfg.as_ref()) {
         Some(ids) => {
-            if ids.is_empty() {
+            let str_ids: Vec<&str> = ids.iter().map(|s| s.as_str()).collect();
+            if str_ids.is_empty() {
                 AnalysisEngine::new()
             } else {
-                AnalysisEngine::with_rules(&ids)
+                AnalysisEngine::with_rules(&str_ids)
             }
         }
         None => AnalysisEngine::with_default_rules(),
     };
+
+    // If --rules specifies finding-level IDs (e.g. "S-02"), keep them for post-filtering
+    let finding_filters: Option<Vec<String>> = cli.rules.as_ref().map(|r| {
+        r.split(',').map(|s| s.trim().to_string()).filter(|s| !s.is_empty()).collect()
+    });
 
     // Build severity overrides from config
     let severity_overrides = build_severity_overrides(cfg.as_ref());
@@ -178,8 +180,8 @@ fn main() -> Result<()> {
                                 &mut report.findings,
                             );
                             let score = soroban_guard_core::scoring::calculate_score(&report.findings);
-                            report.score = score;
                             report.summary = soroban_guard_core::scoring::generate_summary(&score);
+                            report.score = score;
                         }
                         local.push(report);
                     }
@@ -189,7 +191,10 @@ fn main() -> Result<()> {
         }
     });
 
-    let mut reports = reports.into_inner().unwrap();
+    let mut reports = Arc::try_unwrap(reports)
+        .expect("all workers finished")
+        .into_inner()
+        .unwrap();
     if reports.is_empty() {
         eprintln!("No Soroban contracts found in the specified files");
         return Ok(());
@@ -200,6 +205,18 @@ fn main() -> Result<()> {
 
     // Build consolidated report
     let mut consolidated = ConsolidatedReport::new(&reports);
+
+    // Filter by --rules finding-level IDs (e.g. "S-02", "R-01")
+    if let Some(ref filter_ids) = finding_filters {
+        for entry in &mut consolidated.reports {
+            entry.findings.retain(|f| filter_ids.contains(&f.rule_id));
+        }
+        consolidated.all_findings.retain(|f| filter_ids.contains(&f.rule_id));
+        // Recalculate total score after filtering
+        let score = soroban_guard_core::scoring::calculate_score(&consolidated.all_findings);
+        consolidated.summary = soroban_guard_core::scoring::generate_summary(&score);
+        consolidated.total_score = score;
+    }
 
     // Filter by minimum severity
     if cli.min_severity != MinSeverity::Info {

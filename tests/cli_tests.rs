@@ -194,7 +194,7 @@ fn test_cli_rules_filter() {
         .arg("S-02")
         .arg(fp("simple_vault.rs"))
         .assert()
-        .code(predicate::eq(EC_HIGH))
+        .code(predicate::eq(EC_OK))
         .stdout(predicate::str::contains("S-02"));
 }
 
@@ -206,7 +206,7 @@ fn test_cli_rules_filter_excludes_other_rules() {
         .arg(fp("simple_vault.rs"))
         .output()
         .expect("failed to run");
-    assert_eq!(output.status.code(), Some(EC_HIGH));
+    assert_eq!(output.status.code(), Some(EC_OK));
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(stdout.contains("S-02"), "Should contain S-02");
 }
@@ -263,15 +263,14 @@ format = "json"
 }
 
 #[test]
-fn test_cli_unknown_rule_id_errors() {
-    // --rules flag is parsed but not enforced; all rules run,
-    // high findings still exist → exit 1.
+fn test_cli_unknown_rule_id_filter_no_matches() {
+    // --rules with an ID that matches no findings → score 100, exit 0.
     binary()
         .arg("--rules")
         .arg("UNKNOWN-99")
         .arg(fp("simple_vault.rs"))
         .assert()
-        .code(predicate::eq(EC_HIGH));
+        .code(predicate::eq(EC_OK));
 }
 
 #[test]

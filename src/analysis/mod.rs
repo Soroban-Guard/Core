@@ -59,11 +59,11 @@ impl AnalysisEngine {
         let mut engine = Self::new();
         for &id in ids {
             match id {
-                "reentrancy" => engine.register(Box::new(reentrancy::ReentrancyDetector)),
-                "overflow" => engine.register(Box::new(overflow::OverflowChecker)),
-                "access_control" => engine.register(Box::new(access_control::AccessControlDetector)),
-                "storage" => engine.register(Box::new(storage::StorageCollisionDetector)),
-                _ => {},
+                "reentrancy" => { engine.register(Box::new(reentrancy::ReentrancyDetector)); }
+                "overflow" => { engine.register(Box::new(overflow::OverflowChecker)); }
+                "access_control" => { engine.register(Box::new(access_control::AccessControlDetector)); }
+                "storage" => { engine.register(Box::new(storage::StorageCollisionDetector)); }
+                _ => {}
             }
         }
         engine
